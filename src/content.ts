@@ -18,9 +18,43 @@ let panel: OpenPanel | null = null;
 let syncQueued = false;
 
 const overlay = new Overlay(() => {
+  if (!alive()) return shutdown();
   if (focused) void openOnField(focused);
 });
 const resizeObserver = new ResizeObserver(() => scheduleSync());
+
+/**
+ * When the extension is reloaded or updated, this script stays in the page but
+ * its connection to the extension is gone: each chrome.* call then throws. A
+ * new script takes over after the page is reloaded, so this one stops.
+ */
+const listeners = new AbortController();
+
+function alive(): boolean {
+  return !!chrome.runtime?.id;
+}
+
+function shutdown(): void {
+  listeners.abort();
+  resizeObserver.disconnect();
+  focused = null;
+  panel = null;
+  overlay.destroy();
+}
+
+/** Sends a message to the service worker. Null when the extension is gone. */
+async function send<T>(message: Message): Promise<T | null> {
+  if (!alive()) {
+    shutdown();
+    return null;
+  }
+  try {
+    return (await chrome.runtime.sendMessage(message)) as T;
+  } catch {
+    if (!alive()) shutdown();
+    return null;
+  }
+}
 
 function setFocused(el: Editable | null): void {
   if (el === focused) return;
@@ -65,11 +99,8 @@ async function openPanel(
   anchor: () => DOMRect,
 ): Promise<void> {
   closePanel(false);
-  const created = await chrome.runtime.sendMessage({
-    type: 'session:create',
-    session,
-  } satisfies Message);
-  if (!created?.id) return;
+  const created = await send<{ id: string }>({ type: 'session:create', session });
+  if (!created?.id || !alive()) return;
   panel = { id: created.id, target, anchor };
   overlay.openFrame(`${chrome.runtime.getURL('index.html')}#session=${created.id}`, anchor());
   sync();
@@ -103,7 +134,7 @@ function closePanel(refocus: boolean, endSession = true): void {
   const { id, target } = panel;
   panel = null;
   overlay.closeFrame();
-  if (endSession) void chrome.runtime.sendMessage({ type: 'session:end', id } satisfies Message);
+  if (endSession) void send({ type: 'session:end', id });
   if (refocus) target?.el.focus();
   scheduleSync();
 }
@@ -121,7 +152,7 @@ function handleCommand(): void {
 document.addEventListener(
   'focusin',
   (event) => setFocused(findEditable(event.composedPath()[0] ?? null, settings.iconInInputs)),
-  true,
+  { capture: true, signal: listeners.signal },
 );
 
 document.addEventListener(
@@ -133,7 +164,7 @@ document.addEventListener(
       if (focused && active !== focused && !focused.contains(active)) setFocused(null);
     }, 150);
   },
-  true,
+  { capture: true, signal: listeners.signal },
 );
 
 addEventListener(
@@ -141,22 +172,22 @@ addEventListener(
   () => {
     if (focused || panel) scheduleSync();
   },
-  { capture: true, passive: true },
+  { capture: true, passive: true, signal: listeners.signal },
 );
-addEventListener('resize', scheduleSync, { passive: true });
+addEventListener('resize', scheduleSync, { passive: true, signal: listeners.signal });
 addEventListener(
   'pointerdown',
   (event) => {
     if (panel && !overlay.owns(event)) closePanel(false);
   },
-  true,
+  { capture: true, signal: listeners.signal },
 );
 addEventListener(
   'keydown',
   (event) => {
     if (panel && event.key === 'Escape') closePanel(true);
   },
-  true,
+  { capture: true, signal: listeners.signal },
 );
 
 chrome.runtime.onMessage.addListener((message: Message) => {
@@ -179,7 +210,12 @@ chrome.runtime.onMessage.addListener((message: Message) => {
 });
 
 async function applySettings(): Promise<void> {
-  settings = await loadSettings();
+  if (!alive()) return shutdown();
+  try {
+    settings = await loadSettings();
+  } catch {
+    if (!alive()) return shutdown();
+  }
   setFocused(findEditable(deepActiveElement(), settings.iconInInputs));
   scheduleSync();
 }

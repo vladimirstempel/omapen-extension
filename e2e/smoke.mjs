@@ -198,6 +198,21 @@ try {
   await popup.waitForSelector('.result-text');
   assert(!(await popup.$$eval('.buttons button', (b) => b.map((x) => x.textContent.trim()))).some((t) => t.startsWith('Replace')), 'popup has no Replace');
   await popup.screenshot({ path: `${OUT}/6-popup-${scheme}.png` });
+
+  // 7. the extension is reloaded while a page still has the old content script
+  await page.bringToFront();
+  await page.click('#ta');
+  await sleep(300);
+  assert(await page.$('omapen-overlay'), 'the icon is there before the reload');
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await worker.evaluate(() => chrome.runtime.reload()).catch(() => undefined);
+  await sleep(1500);
+  pt = await iconPoint('#ta');
+  await page.mouse.click(pt.x, pt.y);
+  await sleep(500);
+  assert(!(await page.$('omapen-overlay')), 'the old content script takes itself off the page');
+  assert(errors.length === 0, 'and it throws nothing');
   console.log('ALL PASSED');
 } finally {
   await browser.close();

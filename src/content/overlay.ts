@@ -138,4 +138,10 @@ export class Overlay {
     this.frame?.remove();
     this.frame = null;
   }
+
+  /** Takes everything off the page. */
+  destroy(): void {
+    this.closeFrame();
+    this.host.remove();
+  }
 }
