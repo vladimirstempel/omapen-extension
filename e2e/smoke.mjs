@@ -28,6 +28,10 @@ const html = `<!doctype html><title>t</title><body style="font-family:sans-serif
 <textarea id="ta" style="width:500px;height:120px">i has went to the store</textarea><br><br>
 <input id="in" style="width:300px" value="single line"><br><br>
 <div id="ce" contenteditable style="width:500px;min-height:60px;border:1px solid #999;padding:8px">hello <b>world</b> text</div>
+<div style="position:relative;display:inline-block;margin-top:20px">
+<textarea id="chat" style="display:block;width:500px;height:80px">chat message</textarea>
+<button id="send" onclick="window.sent=(window.sent||0)+1" style="position:absolute;right:6px;bottom:6px;width:30px;height:26px;padding:0">➤</button>
+</div>
 <div style="height:1200px"></div></body>`;
 const server = http.createServer((_, res) => res.end(html)).listen(0);
 const url = `http://localhost:${server.address().port}/`;
@@ -171,9 +175,24 @@ try {
   assert((await frame.$eval('.source', (e) => e.value)) === 'Some plain page text to select here.', 'the command takes text selected on the page');
   await frame.click('.action'); await frame.waitForSelector('.result-text');
   assert(!(await frame.$$eval('.buttons button', (b) => b.map((x) => x.textContent.trim()))).some((t) => t.startsWith('Replace')), 'page text has no Replace');
-  await page.keyboard.press('Escape'); await sleep(300);
+  // Not Esc: the focus is in the panel, and the browser can lose the key-up
+  // event of a frame that the key-down removed.
+  await command(); await sleep(300);
 
-  // 6. options and popup pages
+  // 6. a field with a button of the page in its corner
+  await page.click('#chat', { offset: { x: 30, y: 20 } });
+  await sleep(300);
+  await page.screenshot({ path: `${OUT}/7-busy-corner-${scheme}.png` });
+  pt = await iconPoint('#chat');
+  await page.mouse.click(pt.x - 32, pt.y);
+  frame = await panelFrame(); await frame.waitForSelector('.action');
+  assert((await frame.$eval('.source', (e) => e.value)) === 'chat message', 'the icon moves left of a button in the corner');
+  await page.keyboard.press('Escape'); await sleep(300);
+  await page.mouse.click(pt.x, pt.y); await sleep(300);
+  assert((await page.evaluate(() => window.sent)) === 1, 'the button of the page still gets its click');
+  assert(!page.frames().some((f) => f.url().startsWith('chrome-extension://')), 'and the panel stays closed');
+
+  // 7. options and popup pages
   const options = await browser.newPage();
   await options.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: scheme }]);
   await options.setViewport({ width: 900, height: 1300 });
@@ -199,7 +218,7 @@ try {
   assert(!(await popup.$$eval('.buttons button', (b) => b.map((x) => x.textContent.trim()))).some((t) => t.startsWith('Replace')), 'popup has no Replace');
   await popup.screenshot({ path: `${OUT}/6-popup-${scheme}.png` });
 
-  // 7. the extension is reloaded while a page still has the old content script
+  // 8. the extension is reloaded while a page still has the old content script
   await page.bringToFront();
   await page.click('#ta');
   await sleep(300);

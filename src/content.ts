@@ -89,7 +89,7 @@ function sync(): void {
     rect.top < innerHeight &&
     rect.right > 0 &&
     rect.left < innerWidth;
-  if (visible) overlay.showIcon(rect);
+  if (visible && focused) overlay.showIcon(focused, rect);
   else overlay.hideIcon();
 }
 
@@ -171,6 +171,14 @@ addEventListener(
   'scroll',
   () => {
     if (focused || panel) scheduleSync();
+  },
+  { capture: true, passive: true, signal: listeners.signal },
+);
+// The page can show a button over the field when the text changes.
+addEventListener(
+  'input',
+  () => {
+    if (focused) scheduleSync();
   },
   { capture: true, passive: true, signal: listeners.signal },
 );

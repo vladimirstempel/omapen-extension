@@ -1,4 +1,5 @@
-const ICON = 26;
+import { ICON, iconPosition } from './placement';
+
 const GAP = 6;
 const MARGIN = 8;
 const PANEL_WIDTH = 440;
@@ -86,11 +87,10 @@ export class Overlay {
     return event.composedPath().includes(this.host);
   }
 
-  /** Puts the icon in the bottom right corner of the field. */
-  showIcon(field: DOMRect): void {
+  /** Puts the icon in a free corner of the field. */
+  showIcon(field: Element, rect: DOMRect): void {
     this.attach();
-    const x = clamp(field.right - ICON - 8, MARGIN, innerWidth - ICON - MARGIN);
-    const y = clamp(field.bottom - ICON - 6, MARGIN, innerHeight - ICON - MARGIN);
+    const { x, y } = iconPosition(field, rect, this.host);
     this.button.style.translate = `${Math.round(x)}px ${Math.round(y)}px`;
     this.button.hidden = false;
   }
