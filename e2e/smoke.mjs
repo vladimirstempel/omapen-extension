@@ -5,18 +5,11 @@
 //
 // CHROME_BIN names the browser (default: chromium). Screenshots go to dist/e2e.
 
-import puppeteer from 'puppeteer-core';
-import http from 'node:http';
-import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { ID, ROOT, panelFrame as framePanel, sleep, startExtension } from './harness.mjs';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const EXT = join(ROOT, 'dist', 'omapen');
 const OUT = join(ROOT, 'dist', 'e2e');
-const ID = 'olimmfdblijhjidlaidahlinamdhjblm';
-const HOST_NAME = 'com.stempelv.omapen';
 const scheme = process.argv[2] ?? 'light';
 const assert = (condition, message) => {
   if (!condition) throw new Error(`FAIL: ${message}`);
@@ -34,33 +27,10 @@ const html = `<!doctype html><title>t</title><body style="font-family:sans-serif
 </div>
 <br><textarea id="low" rows="1" style="display:block;width:400px;height:60px;margin-top:20px;resize:none">low field</textarea>
 <div style="height:1200px"></div></body>`;
-const server = http.createServer((_, res) => res.end(html)).listen(0);
-const url = `http://localhost:${server.address().port}/`;
-
-// A throwaway profile with the host registered straight from this checkout.
-const profile = mkdtempSync(join(tmpdir(), 'omapen-e2e-'));
-const launcher = join(profile, 'omapen-host');
-writeFileSync(launcher, `#!/bin/sh\nexec '${process.execPath}' '${join(ROOT, 'host', 'omapen-host.mjs')}'\n`);
-chmodSync(launcher, 0o755);
-mkdirSync(join(profile, 'NativeMessagingHosts'));
 mkdirSync(OUT, { recursive: true });
-writeFileSync(
-  join(profile, 'NativeMessagingHosts', `${HOST_NAME}.json`),
-  JSON.stringify({
-    name: HOST_NAME,
-    description: 'OmaPen test host',
-    path: launcher,
-    type: 'stdio',
-    allowed_origins: [`chrome-extension://${ID}/`],
-  }),
-);
-
-const browser = await puppeteer.launch({
-  executablePath: process.env.CHROME_BIN ?? '/usr/bin/chromium',
-  headless: true,
-  userDataDir: profile,
-  args: [`--disable-extensions-except=${EXT}`, `--load-extension=${EXT}`, '--no-first-run'],
-  env: { ...process.env, OMAPEN_AGENT_CMD: "cat >/dev/null; sleep 0.4; printf '<rewrite>\\nREWRITTEN\\n</rewrite>'" },
+const { browser, url, close } = await startExtension({
+  page: () => html,
+  agentCommand: "cat >/dev/null; sleep 0.4; printf '<rewrite>\\nREWRITTEN\\n</rewrite>'",
 });
 try {
   const page = await browser.newPage();
@@ -71,16 +41,8 @@ try {
   await page.goto(url);
   await new Promise((r) => setTimeout(r, 500));
 
-  const panelFrame = async () => {
-    for (let i = 0; i < 50; i++) {
-      const f = page.frames().find((f) => f.url().startsWith(`chrome-extension://${ID}/`));
-      if (f) return f;
-      await new Promise((r) => setTimeout(r, 100));
-    }
-    throw new Error('FAIL: panel frame did not open');
-  };
+  const panelFrame = () => framePanel(page);
   const iconPoint = (sel) => page.$eval(sel, (el) => { const r = el.getBoundingClientRect(); return { x: r.right - 8 - 13, y: r.bottom - 6 - 13 }; });
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   // 1. textarea, whole field
   await page.click('#ta');
@@ -255,6 +217,5 @@ try {
   assert(errors.length === 0, 'and it throws nothing');
   console.log('ALL PASSED');
 } finally {
-  await browser.close();
-  server.close();
+  await close();
 }
