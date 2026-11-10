@@ -7,32 +7,107 @@
   </p>
 
   <section>
-    <h2>Host</h2>
+    <h2>
+      <span class="step" [class.done]="hostReady()">1</span>
+      Install the helper program
+    </h2>
     @if (host(); as status) {
       @if (status.ok) {
-        <p class="ok" role="status">
-          Host {{ status.version }} is installed. Agents found:
-          {{ status.agents?.length ? status.agents?.join(', ') : 'none' }}.
-        </p>
+        <p class="ok" role="status">Done. The helper program is installed.</p>
       } @else {
-        <div class="warning" role="alert">
-          <p>
-            The host is not installed. A browser extension cannot start a program, so OmaPen uses a
-            small host program to run your agent. Install it with Node.js (Linux and macOS):
-          </p>
-          <pre>{{ installCommand() }}</pre>
-          <p class="detail">{{ status.error }}</p>
-        </div>
+        <p>
+          A browser extension is not permitted to start programs on your computer. OmaPen uses a
+          small helper program for that. You install it one time. It works on Linux and macOS.
+        </p>
+        <ol>
+          <li>
+            Install Node.js, if you do not have it:
+            <a href="https://nodejs.org" target="_blank" rel="noopener">nodejs.org</a>
+            (the button "Download" on that page).
+          </li>
+          <li>
+            Open the Terminal application. On macOS: press <kbd>Cmd</kbd>+<kbd>Space</kbd>, type
+            Terminal, press <kbd>Return</kbd>. On Linux: look for Terminal or Console in your
+            applications.
+          </li>
+          <li>
+            Copy this command, paste it into the terminal, press <kbd>Return</kbd>:
+            <app-command [text]="installCommand()" />
+          </li>
+          <li>Come back to this page and click "Check again".</li>
+        </ol>
+        <p class="hint">If the check still fails, close the browser fully and open it again.</p>
       }
+    } @else {
+      <p class="hint">Checking…</p>
     }
     <div class="row">
-      <button type="button" [disabled]="checking()" (click)="checkHost()">Check again</button>
-      <button type="button" [disabled]="testing() || !host()?.ok" (click)="test()">
+      <button type="button" [disabled]="checking()" (click)="checkHost()">
+        {{ checking() ? 'Checking…' : 'Check again' }}
+      </button>
+    </div>
+  </section>
+
+  <section>
+    <h2>
+      <span class="step" [class.done]="anyAgent()">2</span>
+      Install an AI agent
+    </h2>
+    <p>
+      The agent is the AI program that rewrites your text. You need one. If you are not sure, start
+      with Ollama: it is free and private.
+    </p>
+    @for (guide of guides; track guide.agent) {
+      <details>
+        <summary>
+          <span class="guide-title">{{ guide.title }}</span>
+          @if (isInstalled(guide.agent)) {
+            <span class="tag found">Installed</span>
+          } @else if (hostReady()) {
+            <span class="tag">Not installed</span>
+          }
+        </summary>
+        <p>{{ guide.summary }}</p>
+        <p class="hint">{{ guide.cost }}</p>
+        <ol>
+          @for (step of guide.steps; track $index) {
+            <li>
+              {{ step.text }}
+              @if (step.link; as link) {
+                <a [href]="link.url" target="_blank" rel="noopener">{{ link.label }}</a>
+              }
+              @if (step.command; as command) {
+                <app-command [text]="command" />
+              }
+            </li>
+          }
+        </ol>
+      </details>
+    }
+    <p class="hint">
+      You paste the commands into the Terminal application, the same as in step 1. If an agent you
+      installed shows as "Not installed", do step 1 again: the helper program then finds it.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="step" [class.done]="!!testResult()">3</span> Test it</h2>
+    <p>
+      This sends the sentence "i has went to the store yestarday" to your agent and asks it to fix
+      the grammar.
+    </p>
+    <div class="row">
+      <button
+        type="button"
+        class="primary"
+        [disabled]="testing() || !hostReady() || !anyAgent()"
+        (click)="test()"
+      >
         {{ testing() ? 'Testing…' : 'Test the agent' }}
       </button>
     </div>
     @if (testResult()) {
-      <p class="ok" role="status">{{ testResult() }}</p>
+      <p class="ok" role="status">It works. {{ testResult() }}</p>
     }
     @if (testError()) {
       <p class="warning" role="alert">{{ testError() }}</p>
@@ -40,7 +115,7 @@
   </section>
 
   <section>
-    <h2>Agent</h2>
+    <h2>Agent settings</h2>
     <label class="field">
       <span>Agent</span>
       <select #agent [value]="settings().agent" (change)="setAgent(agent.value)">

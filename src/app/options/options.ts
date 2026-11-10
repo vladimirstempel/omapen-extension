@@ -10,14 +10,18 @@ import { HostStatus } from '../../shared/messages';
 import { DEFAULT_PRESETS, parsePresets } from '../../shared/prompts';
 import { AgentChoice, DEFAULT_SETTINGS, ResultMode, Settings } from '../../shared/settings';
 import { Extension } from '../core/extension';
+import { AGENT_GUIDES } from './agent-guides';
+import { Command } from './command';
 
 const AGENTS: readonly AgentChoice[] = ['claude', 'pi', 'omp', 'ollama'];
 /** The id that the key in the manifest gives. The host installer knows it. */
 const KNOWN_ID = 'olimmfdblijhjidlaidahlinamdhjblm';
-const REPOSITORY = 'https://github.com/vladimirstempel/omapen-extension.git';
+const INSTALLER =
+  'https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host/install.sh';
 
 @Component({
   selector: 'app-options',
+  imports: [Command],
   templateUrl: './options.html',
   styleUrl: './options.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,6 +30,7 @@ export class Options implements OnInit {
   private readonly extension = inject(Extension);
 
   protected readonly agents = AGENTS;
+  protected readonly guides = AGENT_GUIDES;
   protected readonly settings = signal<Settings>(DEFAULT_SETTINGS);
   protected readonly host = signal<HostStatus | null>(null);
   protected readonly checking = signal(false);
@@ -36,11 +41,15 @@ export class Options implements OnInit {
   protected readonly testResult = signal('');
   protected readonly testError = signal('');
 
+  /** One command that downloads the host and installs it. */
   protected readonly installCommand = computed(() => {
     const id = chrome.runtime.id;
-    const extra = id === KNOWN_ID ? '' : ` --extension-id ${id}`;
-    return `git clone ${REPOSITORY}\nnode omapen-extension/host/install.mjs${extra}`;
+    const extra = id === KNOWN_ID ? '' : ` -s -- --extension-id ${id}`;
+    return `curl -fsSL ${INSTALLER} | sh${extra}`;
   });
+
+  protected readonly hostReady = computed(() => this.host()?.ok === true);
+  protected readonly anyAgent = computed(() => (this.host()?.agents?.length ?? 0) > 0);
 
   async ngOnInit(): Promise<void> {
     const settings = await this.extension.settings();
@@ -55,8 +64,9 @@ export class Options implements OnInit {
     this.checking.set(false);
   }
 
+  /** Before the host answers, nothing is known about the agents. */
   protected isInstalled(agent: string): boolean {
-    return this.host()?.agents?.includes(agent) ?? true;
+    return this.host()?.agents?.includes(agent) ?? false;
   }
 
   private async patch(patch: Partial<Settings>): Promise<void> {

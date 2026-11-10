@@ -10,8 +10,88 @@ h1 {
 }
 
 h2 {
-  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 4px;
   font-size: 16px;
+}
+
+.step {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-hover);
+  font-size: 13px;
+}
+
+.step.done {
+  background: var(--ok);
+  color: var(--bg);
+}
+
+ol {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+a {
+  color: var(--accent);
+}
+
+details {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0 12px;
+}
+
+details[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+
+summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+summary::before {
+  content: '▸';
+  color: var(--muted);
+}
+
+details[open] summary::before {
+  content: '▾';
+}
+
+.guide-title {
+  flex: 1;
+  font-weight: 600;
+}
+
+.tag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tag.found {
+  background: var(--ok);
+  color: var(--bg);
 }
 
 .lead {

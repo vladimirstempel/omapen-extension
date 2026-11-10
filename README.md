@@ -32,6 +32,15 @@ and has a button to test the agent.
 
 `pnpm host:uninstall` removes the host.
 
+With no checkout, one command installs the host:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host/install.sh | sh
+```
+
+The options page has step by step instructions for the host and for each agent,
+written for people who do not use a terminal every day.
+
 ## Keyboard
 
 | Key | What it does |

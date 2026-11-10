@@ -75,9 +75,17 @@ async function install() {
   // The launcher keeps the PATH of this install, so the agents are found.
   const launcher = join(target, 'omapen-host');
   const quote = (value) => `'${value.replaceAll("'", "'\\''")}'`;
+  // The usual install places of the agents are added: an agent installed after
+  // the host is then found too.
+  const usual = ['.local/bin', '.bun/bin', '.npm-global/bin', '.cargo/bin']
+    .map((dir) => join(home, dir))
+    .concat(['/usr/local/bin', '/opt/homebrew/bin']);
+  const path = [...new Set([...(process.env.PATH ?? '').split(':'), ...usual])]
+    .filter(Boolean)
+    .join(':');
   await writeFile(
     launcher,
-    `#!/bin/sh\nPATH=${quote(process.env.PATH ?? '')}\nexport PATH\nexec ${quote(process.execPath)} ${quote(join(target, 'omapen-host.mjs'))} "$@"\n`,
+    `#!/bin/sh\nPATH=${quote(path)}\nexport PATH\nexec ${quote(process.execPath)} ${quote(join(target, 'omapen-host.mjs'))} "$@"\n`,
   );
   await chmod(launcher, 0o755);
 

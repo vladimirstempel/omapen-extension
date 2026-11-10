@@ -182,7 +182,10 @@ try {
   await options.waitForSelector('.ok, .warning');
   const hostText = await options.$eval('section', (e) => e.innerText);
   assert(/is installed/.test(hostText), 'options page finds the host: ' + hostText.split('\n')[1]);
-  await options.screenshot({ path: `${OUT}/5-options-${scheme}.png` });
+  assert((await options.$$('details')).length === 4, 'options page has a guide for each agent');
+  await options.click('details summary');
+  assert(await options.$('details[open] app-command'), 'a guide shows its commands');
+  await options.screenshot({ path: `${OUT}/5-options-${scheme}.png`, fullPage: true });
 
   const popup = await browser.newPage();
   await popup.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: scheme }]);
