@@ -2,6 +2,7 @@ import {
   HOST_NAME,
   HostStatus,
   Message,
+  ModelList,
   RUN_PORT,
   RunRequest,
   RunResponse,
@@ -31,6 +32,14 @@ async function readSession(id: string): Promise<StoredSession | null> {
 async function pingHost(): Promise<HostStatus> {
   try {
     return (await chrome.runtime.sendNativeMessage(HOST_NAME, { type: 'ping' })) as HostStatus;
+  } catch (error) {
+    return { ok: false, error: (error as Error).message };
+  }
+}
+
+async function listModels(agent: string): Promise<ModelList> {
+  try {
+    return (await chrome.runtime.sendNativeMessage(HOST_NAME, { type: 'models', agent })) as ModelList;
   } catch (error) {
     return { ok: false, error: (error as Error).message };
   }
@@ -80,6 +89,8 @@ async function handleMessage(
     }
     case 'host:ping':
       return isExtensionPage(sender) ? pingHost() : null;
+    case 'host:models':
+      return isExtensionPage(sender) ? listModels(message.agent) : null;
     case 'options:open':
       await chrome.runtime.openOptionsPage();
       return null;

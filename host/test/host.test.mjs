@@ -12,6 +12,7 @@ import {
   cleanError,
   cleanOutput,
   extractAnswer,
+  parseModels,
 } from '../lib/agent.mjs';
 import { directInvocation, findCommand, shimTarget } from '../lib/command.mjs';
 import { createDecoder, encodeMessage } from '../lib/protocol.mjs';
@@ -139,6 +140,23 @@ test('off Windows a command must be executable', async () => {
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
+});
+
+test('the model list of each agent is read from its own output', () => {
+  assert.deepEqual(parseModels('claude', ''), ['haiku', 'sonnet', 'opus']);
+  const pi = 'provider  model        context\ngoogle    gemini-2.5   1.0M\nopenai    gpt-x        128K\n';
+  assert.deepEqual(parseModels('pi', pi), ['google/gemini-2.5', 'openai/gpt-x']);
+  const omp = JSON.stringify({ models: [{ selector: 'a/b' }, { id: 'no-selector' }, { selector: '--flag' }] });
+  assert.deepEqual(parseModels('omp', omp), ['a/b']);
+  assert.deepEqual(parseModels('omp', 'not json'), []);
+  const ollama = 'NAME          ID      SIZE\ngemma4:e4b    c6eb    9.6 GB\n\n';
+  assert.deepEqual(parseModels('ollama', ollama), ['gemma4:e4b']);
+  assert.deepEqual(parseModels('codex', 'x\ny'), []);
+});
+
+test('the host lists the models of an agent', async () => {
+  const answer = await callHost({ type: 'models', agent: 'claude' });
+  assert.deepEqual(answer, { ok: true, agent: 'claude', models: ['haiku', 'sonnet', 'opus'] });
 });
 
 function callHost(message, env = {}) {

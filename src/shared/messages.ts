@@ -22,6 +22,14 @@ export interface HostStatus {
   error?: string;
 }
 
+/** The models that the selected agent can run. Empty: it has no list. */
+export interface ModelList {
+  ok: boolean;
+  agent?: string;
+  models?: string[];
+  error?: string;
+}
+
 export interface RunRequest {
   instruction: string;
   text: string;
@@ -43,4 +51,5 @@ export type Message =
   | { type: 'panel:event'; id: string; event: PanelEvent }
   | { type: 'command:open' }
   | { type: 'host:ping' }
+  | { type: 'host:models'; agent: string }
   | { type: 'options:open' };

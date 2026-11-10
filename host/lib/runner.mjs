@@ -9,6 +9,8 @@ import {
   cleanError,
   cleanOutput,
   extractAnswer,
+  modelsCommand,
+  parseModels,
 } from './agent.mjs';
 import { directInvocation, findCommand } from './command.mjs';
 
@@ -18,12 +20,32 @@ export async function isInstalled(command) {
   return (await findCommand(command)) !== null;
 }
 
-function capture(command, args) {
+/** The output of a short command, or '' when it is not there or fails. */
+async function capture(command, args) {
+  const file = await findCommand(command);
+  if (!file) return '';
+  let invocation = { command: file, args };
+  if (process.platform === 'win32') {
+    invocation = await directInvocation(file, args).catch(() => null);
+    if (!invocation) return '';
+  }
   return new Promise((resolve) => {
-    execFile(command, args, { timeout: 5000 }, (error, stdout) => {
+    const options = { timeout: 15_000, maxBuffer: 16 * 1024 * 1024, windowsHide: true };
+    execFile(invocation.command, invocation.args, options, (error, stdout) => {
       resolve(error ? '' : String(stdout).trim());
     });
   });
+}
+
+/**
+ * The models that the settings offer for an agent. An empty list means the
+ * agent has none to offer, and the model is then typed by hand.
+ */
+export async function listModels(configured) {
+  const agent = await resolveAgent(configured);
+  const list = modelsCommand(agent);
+  const output = list ? await capture(list.command, list.args) : '';
+  return { agent, models: parseModels(agent, output) };
 }
 
 export async function installedAgents() {

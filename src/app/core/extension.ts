@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {
   HostStatus,
   Message,
+  ModelList,
   PanelEvent,
   RUN_PORT,
   RunRequest,
@@ -33,6 +34,12 @@ export class Extension {
 
   pingHost(): Promise<HostStatus> {
     return this.send({ type: 'host:ping' });
+  }
+
+  /** The models of an agent. Empty when the agent has no list or the host is too old. */
+  async models(agent: string): Promise<string[]> {
+    const list = await this.send<ModelList | null>({ type: 'host:models', agent });
+    return (list?.ok && list.models) || [];
   }
 
   openOptions(): void {

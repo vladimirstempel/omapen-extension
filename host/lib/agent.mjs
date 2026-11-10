@@ -90,6 +90,59 @@ export function agentCommand(agent, model, prompt) {
   }
 }
 
+/**
+ * The command that prints the models of an agent, or null when the agent has
+ * no such command. The ids are in the form that the agent takes after --model.
+ */
+export function modelsCommand(agent) {
+  switch (agent) {
+    case 'pi':
+      return { command: 'pi', args: ['--list-models'] };
+    case 'omp':
+      return { command: 'omp', args: ['models', '--json'] };
+    case 'ollama':
+      return { command: 'ollama', args: ['list'] };
+    default:
+      return null;
+  }
+}
+
+// The first row of a table is its header.
+const rows = (table) =>
+  table
+    .split('\n')
+    .slice(1)
+    .map((line) => line.trim().split(/\s+/))
+    .filter((cells) => cells[0]);
+
+/** The model ids in the output of `modelsCommand`. */
+export function parseModels(agent, output) {
+  let ids = [];
+  switch (agent) {
+    // claude has no command that lists models. These names follow the newest
+    // model of each size, so the list does not go out of date.
+    case 'claude':
+      ids = ['haiku', 'sonnet', 'opus'];
+      break;
+    case 'pi':
+      ids = rows(output)
+        .filter((cells) => cells.length >= 2)
+        .map(([provider, model]) => `${provider}/${model}`);
+      break;
+    case 'omp':
+      try {
+        ids = (JSON.parse(output).models ?? []).map((model) => model?.selector);
+      } catch {
+        // Not JSON: no list.
+      }
+      break;
+    case 'ollama':
+      ids = rows(output).map(([name]) => name);
+      break;
+  }
+  return [...new Set(ids.filter((id) => typeof id === 'string' && id && isValidModel(id)))];
+}
+
 // claude takes the rules as a real system prompt. Every other agent has one
 // channel, so the rules go at the top of the message.
 export function buildPrompt(instruction, text, agent) {

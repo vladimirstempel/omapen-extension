@@ -177,6 +177,21 @@ try {
   assert((await options.$$('details')).length === 4, 'options page has a guide for each agent');
   await options.click('details summary');
   assert(await options.$('details[open] app-command'), 'a guide shows its commands');
+  // The model list: claude has a fixed one, so the test needs no agent.
+  await options.select('section:nth-of-type(4) select', 'claude');
+  await options.waitForSelector('#model:not([disabled]) option[value="sonnet"]');
+  const stored = () => options.evaluate(async () => (await chrome.storage.local.get(null)).model);
+  assert((await options.$$eval('#model option', (o) => o.map((x) => x.textContent.trim())).then((l) => l.join(','))) === 'Default of the agent,haiku,sonnet,opus,Other…', 'the model list comes from the agent');
+  await options.select('#model', 'sonnet'); await sleep(200);
+  assert((await stored()) === 'sonnet', 'a model from the list is saved');
+  await options.select('#model', '\u0000other');
+  await options.waitForSelector('#model-name');
+  await options.$eval('#model-name', (e) => { e.value = 'my-model'; e.dispatchEvent(new Event('change')); }); await sleep(200);
+  assert((await stored()) === 'my-model', '"Other" takes a typed name');
+  await options.reload(); await options.waitForSelector('#model-name');
+  assert((await options.$eval('#model-name', (e) => e.value)) === 'my-model', 'a typed name is still there after a reload');
+  await options.select('#model', ''); await sleep(200);
+  await options.select('section:nth-of-type(4) select', 'auto'); await sleep(300);
   await options.screenshot({ path: `${OUT}/5-options-${scheme}.png`, fullPage: true });
 
   const windowsOptions = await browser.newPage();

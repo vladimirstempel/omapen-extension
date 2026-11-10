@@ -125,6 +125,11 @@ p {
   gap: 10px;
 }
 
+/* A second control of the same field goes under the first one. */
+.field > :nth-child(n + 3) {
+  grid-column: 2;
+}
+
 fieldset {
   display: flex;
   flex-direction: column;

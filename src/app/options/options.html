@@ -139,19 +139,39 @@
       Only agents that can run with all their tools switched off are accepted, because text from a
       web page is not trusted. ollama runs a model on your machine and has no tools.
     </p>
-    <label class="field">
-      <span>Model</span>
-      <input
-        #model
-        type="text"
-        placeholder="Default of the agent"
-        [value]="settings().model"
-        (change)="setModel(model.value)"
-      />
-    </label>
+    <div class="field">
+      <label for="model">Model</label>
+      @if (loadingModels()) {
+        <select id="model" disabled>
+          <option>Looking for the models of the agent…</option>
+        </select>
+      } @else {
+        @if (models().length) {
+          <select #pick id="model" [value]="modelChoice()" (change)="pickModel(pick.value)">
+            <option value="" [selected]="modelChoice() === ''">Default of the agent</option>
+            @for (id of models(); track id) {
+              <option [value]="id" [selected]="modelChoice() === id">{{ id }}</option>
+            }
+            <option [value]="otherModel" [selected]="modelChoice() === otherModel">Other…</option>
+          </select>
+        }
+        @if (!models().length || customModel()) {
+          <input
+            #model
+            type="text"
+            [id]="models().length ? 'model-name' : 'model'"
+            aria-label="Model name"
+            [placeholder]="customModel() ? 'The name of a model' : 'Default of the agent'"
+            [value]="settings().model"
+            (change)="setModel(model.value)"
+          />
+        }
+      }
+    </div>
     <p class="hint">
-      Empty gives claude <code>haiku</code>, gives ollama your most recent pull, and leaves pi and
-      omp on their own default.
+      The list comes from your agent. Select "Other…" to type a name that is not in it. The default
+      gives claude <code>haiku</code>, gives ollama your most recent pull, and leaves pi and omp on
+      their own default.
     </p>
   </section>
 

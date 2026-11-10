@@ -16,6 +16,9 @@ import { Command } from './command';
 const AGENTS: readonly AgentChoice[] = ['claude', 'pi', 'omp', 'ollama'];
 /** The ids that the host installer knows: see EXTENSION_IDS in host/install.mjs. */
 const KNOWN_IDS = ['olimmfdblijhjidlaidahlinamdhjblm'];
+/** The list entry that opens the field. No agent has a model with this id. */
+const OTHER_MODEL = '\u0000other';
+
 const RAW = 'https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host';
 
 function onWindows(): boolean {
@@ -38,6 +41,17 @@ export class Options implements OnInit {
   protected readonly settings = signal<Settings>(DEFAULT_SETTINGS);
   protected readonly host = signal<HostStatus | null>(null);
   protected readonly checking = signal(false);
+  /** The models of the selected agent. Empty: the agent has no list. */
+  protected readonly models = signal<readonly string[]>([]);
+  protected readonly loadingModels = signal(false);
+  /** The model is one that the list does not have, so it is typed by hand. */
+  protected readonly customModel = signal(false);
+  protected readonly otherModel = OTHER_MODEL;
+  protected readonly modelChoice = computed(() =>
+    this.customModel() ? OTHER_MODEL : this.settings().model,
+  );
+  private modelsRequest = 0;
+
   protected readonly presetsText = signal('');
   protected readonly presetsError = signal('');
   protected readonly presetsSaved = signal(false);
@@ -77,6 +91,29 @@ export class Options implements OnInit {
     this.checking.set(true);
     this.host.set(await this.extension.pingHost());
     this.checking.set(false);
+    // A model that was pulled since the last look is then in the list.
+    await this.loadModels();
+  }
+
+  private async loadModels(): Promise<void> {
+    const request = ++this.modelsRequest;
+    this.loadingModels.set(true);
+    const models = await this.extension.models(this.settings().agent);
+    // The agent was changed while the host looked: a newer request has the answer.
+    if (request !== this.modelsRequest) return;
+    const saved = this.settings().model;
+    this.models.set(models);
+    this.customModel.set(models.length > 0 && saved !== '' && !models.includes(saved));
+    this.loadingModels.set(false);
+  }
+
+  protected pickModel(value: string): void {
+    if (value === OTHER_MODEL) {
+      this.customModel.set(true);
+      return;
+    }
+    this.customModel.set(false);
+    void this.patch({ model: value });
   }
 
   /** Before the host answers, nothing is known about the agents. */
@@ -92,6 +129,7 @@ export class Options implements OnInit {
   protected setAgent(agent: string): void {
     // A model id belongs to the agent it came from.
     void this.patch({ agent: agent as AgentChoice, model: '' });
+    void this.loadModels();
   }
 
   protected setModel(model: string): void {
