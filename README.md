@@ -1,5 +1,7 @@
 # OmaPen for the browser
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/stempelv)
+
 "Help me write" with the AI agent on your own machine. The browser version of
 [OmaPen](https://github.com/vladimirstempel/omapen): no API key in the
 extension, the same agents, the same actions.
@@ -83,10 +85,6 @@ pnpm e2e      # builds, then drives the extension in headless Chromium with a fa
 The build uses [`@stempelv/ng-builders`](https://github.com/vladimirstempel/ng-builders).
 After a change in `host/`, run `pnpm host:install` again: the host is copied
 out of the checkout.
-
-## Support
-
-OmaPen is free. If it saves you time, you can [buy me a coffee](https://buymeacoffee.com/stempelv).
 
 ## License
 
