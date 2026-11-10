@@ -1,0 +1,83 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --surface: #f4f4f7;
+  --surface-hover: #eaeaf0;
+  --border: #dcdce4;
+  --text: #1c1c22;
+  --muted: #6b6b7b;
+  --accent: #5b5bd6;
+  --accent-hover: #4c4cc4;
+  --accent-soft: #ececfd;
+  --on-accent: #ffffff;
+  --danger: #c62a2f;
+  --danger-soft: #fdecec;
+  --ok: #1a7f4b;
+  --radius: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1b1f;
+    --surface: #26262c;
+    --surface-hover: #303038;
+    --border: #3a3a44;
+    --text: #ededf0;
+    --muted: #9c9cab;
+    --accent: #8e8ef5;
+    --accent-hover: #a3a3f8;
+    --accent-soft: #2b2b52;
+    --on-accent: #14141c;
+    --danger: #ff8b8b;
+    --danger-soft: #3d2022;
+    --ok: #5fd39a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Set on body: the browser gives extension pages a body font size of 75%. */
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* In a page the frame has a fixed size, so the panel scrolls in it. */
+html[data-mode='frame'],
+html[data-mode='frame'] body {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* The toolbar popup takes its size from the content. */
+html[data-mode='popup'] body {
+  width: 440px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}

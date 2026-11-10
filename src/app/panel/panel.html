@@ -1,0 +1,122 @@
+<div class="panel" #root>
+  <header>
+    <span class="brand">OmaPen</span>
+    <span class="badge">{{ badge() }}</span>
+    <span class="spacer"></span>
+    <button
+      type="button"
+      class="icon"
+      title="Settings"
+      aria-label="Settings"
+      (click)="openOptions()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="3" />
+        <path
+          d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"
+        />
+      </svg>
+    </button>
+    <button type="button" class="icon" title="Close (Esc)" aria-label="Close" (click)="close()">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+    </button>
+  </header>
+
+  <textarea
+    #source
+    class="source"
+    rows="2"
+    aria-label="Text to work on"
+    placeholder="Type or paste the text to work on"
+    [value]="text()"
+    (input)="text.set(source.value)"
+  ></textarea>
+
+  <div class="actions">
+    @for (preset of presets(); track preset.id; let index = $index) {
+      <button
+        type="button"
+        class="action"
+        [disabled]="busy() || !hasText()"
+        [attr.aria-keyshortcuts]="index < 9 ? 'Alt+' + (index + 1) : null"
+        (click)="runPreset(preset)"
+      >
+        @if (index < 9) {
+          <kbd>{{ index + 1 }}</kbd>
+        }
+        <span>{{ preset.label }}</span>
+      </button>
+    }
+    <button
+      type="button"
+      class="action"
+      [class.active]="customOpen()"
+      [attr.aria-expanded]="customOpen()"
+      (click)="toggleCustom()"
+    >
+      @if (customDigit(); as digit) {
+        <kbd>{{ digit }}</kbd>
+      }
+      <span>Custom</span>
+    </button>
+  </div>
+
+  @if (customOpen()) {
+    <form class="custom" (submit)="runCustom($event)">
+      <input
+        #customField
+        type="text"
+        aria-label="Your instruction"
+        placeholder="Say what you want: make it rhyme"
+        [value]="customPrompt()"
+        (input)="customPrompt.set(customField.value)"
+      />
+      <button
+        type="submit"
+        class="primary"
+        [disabled]="busy() || !hasText() || !customPrompt().trim()"
+      >
+        Run
+      </button>
+    </form>
+  }
+
+  @switch (state()) {
+    @case ('running') {
+      <div class="status" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        <span>{{ runLabel() }}…</span>
+        <span class="spacer"></span>
+        <button type="button" (click)="cancel()">Cancel</button>
+      </div>
+    }
+    @case ('error') {
+      <div class="error" role="alert">
+        <p>{{ error() }}</p>
+        @if (hostMissing()) {
+          <p>
+            OmaPen needs its host program to run your agent.
+            <button type="button" class="link" (click)="openOptions()">Open setup</button>
+          </p>
+        }
+        <button type="button" (click)="again()">Try again</button>
+      </div>
+    }
+    @case ('done') {
+      <section class="result" aria-label="Result">
+        <div class="result-text" tabindex="0">{{ result() }}</div>
+        <div class="buttons">
+          @if (canReplace()) {
+            <button type="button" class="primary" (click)="replace()">
+              Replace <kbd>Ctrl ↵</kbd>
+            </button>
+          }
+          <button type="button" [class.primary]="!canReplace()" (click)="copy()">
+            {{ copied() ? 'Copied' : 'Copy' }}
+          </button>
+          <button type="button" (click)="again()">Again</button>
+        </div>
+      </section>
+    }
+  }
+</div>

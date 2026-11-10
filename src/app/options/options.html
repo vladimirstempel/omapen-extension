@@ -1,0 +1,145 @@
+<main>
+  <h1>OmaPen</h1>
+  <p class="lead">
+    Rewrite the text in any field with the AI agent on your own machine. Click the pen icon in a
+    field, or press the shortcut (default <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd>, change it on
+    <code>chrome://extensions/shortcuts</code>).
+  </p>
+
+  <section>
+    <h2>Host</h2>
+    @if (host(); as status) {
+      @if (status.ok) {
+        <p class="ok" role="status">
+          Host {{ status.version }} is installed. Agents found:
+          {{ status.agents?.length ? status.agents?.join(', ') : 'none' }}.
+        </p>
+      } @else {
+        <div class="warning" role="alert">
+          <p>
+            The host is not installed. A browser extension cannot start a program, so OmaPen uses a
+            small host program to run your agent. Install it with Node.js (Linux and macOS):
+          </p>
+          <pre>{{ installCommand() }}</pre>
+          <p class="detail">{{ status.error }}</p>
+        </div>
+      }
+    }
+    <div class="row">
+      <button type="button" [disabled]="checking()" (click)="checkHost()">Check again</button>
+      <button type="button" [disabled]="testing() || !host()?.ok" (click)="test()">
+        {{ testing() ? 'Testing…' : 'Test the agent' }}
+      </button>
+    </div>
+    @if (testResult()) {
+      <p class="ok" role="status">{{ testResult() }}</p>
+    }
+    @if (testError()) {
+      <p class="warning" role="alert">{{ testError() }}</p>
+    }
+  </section>
+
+  <section>
+    <h2>Agent</h2>
+    <label class="field">
+      <span>Agent</span>
+      <select #agent [value]="settings().agent" (change)="setAgent(agent.value)">
+        <option value="auto" [selected]="settings().agent === 'auto'">
+          Automatic{{ host()?.defaultAgent ? ' (' + host()?.defaultAgent + ')' : '' }}
+        </option>
+        @for (name of agents; track name) {
+          <option [value]="name" [selected]="settings().agent === name">
+            {{ name }}{{ isInstalled(name) ? '' : ' (not installed)' }}
+          </option>
+        }
+      </select>
+    </label>
+    <p class="hint">
+      Only agents that can run with all their tools switched off are accepted, because text from a
+      web page is not trusted. ollama runs a model on your machine and has no tools.
+    </p>
+    <label class="field">
+      <span>Model</span>
+      <input
+        #model
+        type="text"
+        placeholder="Default of the agent"
+        [value]="settings().model"
+        (change)="setModel(model.value)"
+      />
+    </label>
+    <p class="hint">
+      Empty gives claude <code>haiku</code>, gives ollama your most recent pull, and leaves pi and
+      omp on their own default.
+    </p>
+  </section>
+
+  <section>
+    <h2>Behaviour</h2>
+    <fieldset>
+      <legend>What to do with the result</legend>
+      <label>
+        <input
+          type="radio"
+          name="resultMode"
+          [checked]="settings().resultMode === 'panel'"
+          (change)="setResultMode('panel')"
+        />
+        Show it in the panel
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="resultMode"
+          [checked]="settings().resultMode === 'replace'"
+          (change)="setResultMode('replace')"
+        />
+        Replace the text immediately
+      </label>
+    </fieldset>
+    <label>
+      <input
+        #showIcon
+        type="checkbox"
+        [checked]="settings().showIcon"
+        (change)="setShowIcon(showIcon.checked)"
+      />
+      Show the icon in the field that has focus
+    </label>
+    <label>
+      <input
+        #iconInInputs
+        type="checkbox"
+        [checked]="settings().iconInInputs"
+        [disabled]="!settings().showIcon"
+        (change)="setIconInInputs(iconInInputs.checked)"
+      />
+      Also in single-line inputs
+    </label>
+  </section>
+
+  <section>
+    <h2>Actions</h2>
+    <p class="hint">
+      Each action needs an <code>id</code>, a <code>label</code> and the
+      <code>instruction</code> the agent gets. The first nine get <kbd>Alt</kbd>+digit.
+    </p>
+    <textarea
+      #presets
+      rows="14"
+      spellcheck="false"
+      aria-label="Actions as JSON"
+      [value]="presetsText()"
+      (input)="editPresets(presets.value)"
+    ></textarea>
+    @if (presetsError()) {
+      <p class="warning" role="alert">{{ presetsError() }}</p>
+    }
+    <div class="row">
+      <button type="button" class="primary" (click)="savePresets()">
+        {{ presetsSaved() ? 'Saved' : 'Save actions' }}
+      </button>
+      <button type="button" (click)="resetPresets()">Reset to defaults</button>
+    </div>
+  </section>
+</main>

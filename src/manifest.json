@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "OmaPen",
+  "version": "0.1.0",
+  "description": "Help me write, with your own local AI agent: rewrite the text in any field with claude, pi, omp or ollama.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6nJSZcics9h0mDUJJ1AqBbRufw958Ps+BxzLOKHgaaStrJV756baghNVAcXN2JiynX8ji7th5Fp9riulfQxfo3m3vT/Wa0zHdvd4uJ57e5DP3v4A7+Eo4Dz1ioKfJVJonBgj3auZ1gi7yGlqtBcoB/IqMc+kbb9pukw77wvpFNvmJGsz/PPNjyglDaYoPIEtAb88U/LMO88/Kmyjb6fESO1iIf0D70eTXB8fCOFssl6lx72kW3kFonoOQeZikCFbLUlu+wdi9k6XItptJM5dz4O/hZd3kBUnW2a/xzunfHKY66BaGLY+Ud7zwZQHYstQFPbC2UoxypStNagqox/L9QIDAQAB",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": ["nativeMessaging", "storage", "clipboardWrite"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "OmaPen",
+    "default_popup": "index.html#compose"
+  },
+  "options_ui": {
+    "page": "index.html#options",
+    "open_in_tab": true
+  },
+  "commands": {
+    "open-panel": {
+      "suggested_key": {
+        "default": "Alt+Shift+H"
+      },
+      "description": "Open OmaPen on the focused field or the selected text"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["index.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
