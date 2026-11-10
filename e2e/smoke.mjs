@@ -32,6 +32,7 @@ const html = `<!doctype html><title>t</title><body style="font-family:sans-serif
 <textarea id="chat" style="display:block;width:500px;height:80px">chat message</textarea>
 <button id="send" onclick="window.sent=(window.sent||0)+1" style="position:absolute;right:6px;bottom:6px;width:30px;height:26px;padding:0">➤</button>
 </div>
+<br><textarea id="low" rows="1" style="display:block;width:400px;height:60px;margin-top:20px;resize:none">low field</textarea>
 <div style="height:1200px"></div></body>`;
 const server = http.createServer((_, res) => res.end(html)).listen(0);
 const url = `http://localhost:${server.address().port}/`;
@@ -191,6 +192,16 @@ try {
   await page.mouse.click(pt.x, pt.y); await sleep(300);
   assert((await page.evaluate(() => window.sent)) === 1, 'the button of the page still gets its click');
   assert(!page.frames().some((f) => f.url().startsWith('chrome-extension://')), 'and the panel stays closed');
+
+  await page.click('#low', { offset: { x: 30, y: 20 } }); await sleep(300);
+  await page.screenshot({ path: `${OUT}/8-low-field-${scheme}.png` });
+  pt = await page.$eval('#low', (el) => { const r = el.getBoundingClientRect(); return { x: r.right - 8 - 13, y: r.bottom - 10 }; });
+  await page.mouse.click(pt.x, pt.y); await sleep(400);
+  assert(!page.frames().some((f) => f.url().startsWith('chrome-extension://')), 'in a low field the icon is not at an edge');
+  await page.mouse.click(pt.x, pt.y - 28);
+  frame = await panelFrame(); await frame.waitForSelector('.action');
+  assert((await frame.$eval('.source', (e) => e.value)) === 'low field', 'it is on the centre line');
+  await command(); await sleep(300);
 
   // 7. options and popup pages
   const options = await browser.newPage();

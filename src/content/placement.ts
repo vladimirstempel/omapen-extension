@@ -35,19 +35,26 @@ function isFree(point: Point, field: Element, own: Element): boolean {
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
 
 /**
- * Where to draw the icon for a field: its bottom right corner, or the nearest
- * place along the bottom or the top edge that the page has left empty.
+ * Where to draw the icon for a field: its bottom right corner (the right end
+ * of the centre line for a low field), or the nearest place to the left, then
+ * along the top edge, that the page has left empty.
  */
 export function iconPosition(field: Element, rect: DOMRect, own: Element): Point {
   const visible = (point: Point): Point => ({
     x: clamp(point.x, MARGIN, innerWidth - ICON - MARGIN),
     y: clamp(point.y, MARGIN, innerHeight - ICON - MARGIN),
   });
-  const preferred = visible({ x: rect.right - ICON - EDGE_X, y: rect.bottom - ICON - EDGE_Y });
+  // A field of one or two lines has no corner to sit in: the icon goes on its
+  // centre line, where the page puts its own buttons.
+  const tall = rect.height >= 2 * ICON + 4 * EDGE_Y;
+  const preferred = visible({
+    x: rect.right - ICON - EDGE_X,
+    y: tall ? rect.bottom - ICON - EDGE_Y : rect.top + (rect.height - ICON) / 2,
+  });
 
   const rows = [preferred.y];
   // A second row only where it is a different place.
-  if (rect.height >= 2 * ICON + 4 * EDGE_Y) rows.push(visible({ x: 0, y: rect.top + EDGE_Y }).y);
+  if (tall) rows.push(visible({ x: 0, y: rect.top + EDGE_Y }).y);
 
   for (const y of rows) {
     for (let step = 0; step < MAX_STEPS; step++) {
