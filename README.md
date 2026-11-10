@@ -99,3 +99,8 @@ out of the checkout.
 ## License
 
 MIT, see [LICENSE](LICENSE).
+## Privacy
+
+OmaPen has no server. Your text goes to the agent on your own computer and
+nowhere else from the extension. See [PRIVACY.md](PRIVACY.md).
+
