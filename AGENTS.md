@@ -16,13 +16,14 @@ OmaPen browser extension (Chromium MV3): AI writing helper for text fields. Port
 - `pnpm build`: build the extension.
 - `pnpm test`: host unit tests (`node --test`).
 - `pnpm e2e`: build, then smoke test in headless Chromium with a fake agent. Run it after each change in `src/`.
+- `pnpm package`: build, then make `dist/omapen-<version>.zip` for the Chrome Web Store (no `key`).
 - `pnpm host:install`: copy the host to `~/.local/share/omapen-host` and register it. Run again after a change in `host/`.
 
 ## Rules
 
 - The agent table in `host/lib/agent.mjs` accepts only agents with a documented "no tools" switch. Do not add an agent without one.
 - On Windows the host must not start an agent through `cmd.exe` or with `shell: true`: the prompt is an argument and comes from a page. `host/lib/command.mjs` finds the program behind a `.cmd` script.
-- The extension id is fixed by `key` in `src/manifest.json`. `host/install.mjs`, `e2e/smoke.mjs` and the options page know this id.
+- The extension id of an unpacked build is fixed by `key` in `src/manifest.json`. The ids that may start the host are in `EXTENSION_IDS` (`host/install.mjs`) and `KNOWN_IDS` (`src/app/options/options.ts`): keep the two lists the same. `e2e/smoke.mjs` knows the unpacked id.
 
 ## Workflow
 

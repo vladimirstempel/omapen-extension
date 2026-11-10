@@ -15,18 +15,17 @@ const STYLES = `
     height: ${ICON}px;
     padding: 0;
     border: 0;
-    border-radius: 8px;
-    background: #5b5bd6;
-    color: #fff;
+    border-radius: 7px;
+    background: #1a1b26;
     cursor: pointer;
     display: grid;
     place-items: center;
-    opacity: 0.82;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(91, 91, 214, 0.35);
+    opacity: 0.88;
+    box-shadow: 0 0 0 1px rgba(158, 206, 106, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3);
     transition: opacity 120ms, scale 120ms;
   }
   button:hover, button:focus-visible { opacity: 1; scale: 1.08; }
-  button:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+  button:focus-visible { outline: 2px solid #9ece6a; outline-offset: 1px; }
   button[hidden], iframe[hidden] { display: none; }
   iframe {
     position: fixed;
@@ -43,7 +42,9 @@ const STYLES = `
   }
 `;
 
-const PEN = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
+// The same drawing as public/icons/icon.svg. The dark tile keeps the green
+// lines readable on a field of any colour.
+const PEN = `<svg width="17" height="17" viewBox="0 0 128 128" fill="none" stroke="#9ECE6A" stroke-width="11" aria-hidden="true"><path d="M62 19.500H13.500V114.500H108.500V66"/><path d="M97 8.500 119.500 31 66 84.500 40 88 43.500 62Z"/></svg>`;
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
 

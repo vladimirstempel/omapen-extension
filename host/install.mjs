@@ -16,8 +16,10 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const HOST_NAME = 'com.stempelv.omapen';
-// The id that the `key` in src/manifest.json gives an unpacked build.
-export const EXTENSION_ID = 'olimmfdblijhjidlaidahlinamdhjblm';
+// The extensions that may start the host. The first id is the one that the
+// `key` in src/manifest.json gives an unpacked build. The id of the Chrome Web
+// Store item goes here too.
+export const EXTENSION_IDS = ['olimmfdblijhjidlaidahlinamdhjblm'];
 
 const home = homedir();
 const source = dirname(fileURLToPath(import.meta.url));
@@ -160,7 +162,7 @@ async function install() {
   await cp(join(source, 'omapen-host.mjs'), join(target, 'omapen-host.mjs'));
   const launcher = await writeLauncher(target);
 
-  const ids = new Set([EXTENSION_ID]);
+  const ids = new Set(EXTENSION_IDS);
   // The environment variable is for the PowerShell installer, which cannot pass arguments.
   const extra = argument('--extension-id') ?? process.env.OMAPEN_EXTENSION_ID;
   if (extra) ids.add(extra);

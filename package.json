@@ -6,6 +6,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "node --test host/test/",
     "e2e": "ng build && node e2e/smoke.mjs",
+    "package": "ng build && node scripts/package.mjs",
     "host:install": "node host/install.mjs",
     "host:uninstall": "node host/install.mjs --uninstall"
   },

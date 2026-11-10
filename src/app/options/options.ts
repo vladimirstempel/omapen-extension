@@ -14,8 +14,8 @@ import { AGENT_GUIDES, GuideStep } from './agent-guides';
 import { Command } from './command';
 
 const AGENTS: readonly AgentChoice[] = ['claude', 'pi', 'omp', 'ollama'];
-/** The id that the key in the manifest gives. The host installer knows it. */
-const KNOWN_ID = 'olimmfdblijhjidlaidahlinamdhjblm';
+/** The ids that the host installer knows: see EXTENSION_IDS in host/install.mjs. */
+const KNOWN_IDS = ['olimmfdblijhjidlaidahlinamdhjblm'];
 const RAW = 'https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host';
 
 function onWindows(): boolean {
@@ -52,7 +52,7 @@ export class Options implements OnInit {
   /** One command that downloads the host and installs it. */
   protected readonly installCommand = computed(() => {
     const id = chrome.runtime.id;
-    const known = id === KNOWN_ID;
+    const known = KNOWN_IDS.includes(id);
     if (this.windows) {
       return `${known ? '' : `$env:OMAPEN_EXTENSION_ID='${id}'; `}irm ${RAW}/install.ps1 | iex`;
     }
