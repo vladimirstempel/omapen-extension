@@ -84,6 +84,10 @@ The build uses [`@stempelv/ng-builders`](https://github.com/vladimirstempel/ng-b
 After a change in `host/`, run `pnpm host:install` again: the host is copied
 out of the checkout.
 
+## Support
+
+OmaPen is free. If it saves you time, you can [buy me a coffee](https://buymeacoffee.com/stempelv).
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
