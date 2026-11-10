@@ -103,7 +103,7 @@ const PAGES = {
     centre: true,
   }),
   actions: screenshotPage({
-    title: 'One click. The right words.',
+    title: 'One click.<br>The right words.',
     lead: 'The panel opens next to your text. You stay on the page.',
     extra: points(['Fix grammar, rewrite, shorten, translate', 'Or write your own instruction', 'Change the actions in the settings']),
     right: demoApp(),
