@@ -206,6 +206,16 @@ try {
   assert(await options.$('details[open] app-command'), 'a guide shows its commands');
   await options.screenshot({ path: `${OUT}/5-options-${scheme}.png`, fullPage: true });
 
+  const windowsOptions = await browser.newPage();
+  await windowsOptions.evaluateOnNewDocument(() => {
+    Object.defineProperty(navigator, 'userAgentData', { get: () => ({ platform: 'Windows' }) });
+  });
+  await windowsOptions.goto(`chrome-extension://${ID}/index.html#options`);
+  await windowsOptions.waitForSelector('details');
+  const claudeGuide = await windowsOptions.$$eval('details', (all) => all.find((d) => /Claude/.test(d.textContent)).textContent);
+  assert(/install\.ps1 \| iex/.test(claudeGuide), 'on Windows the guides show PowerShell commands');
+  await windowsOptions.close();
+
   const popup = await browser.newPage();
   await popup.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: scheme }]);
   await popup.setViewport({ width: 440, height: 400 });

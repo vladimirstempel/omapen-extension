@@ -1,8 +1,7 @@
 import { execFile, spawn } from 'node:child_process';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { delimiter, join } from 'node:path';
-import { access, constants } from 'node:fs/promises';
+import { join } from 'node:path';
 import {
   AGENTS,
   agentCommand,
@@ -11,20 +10,12 @@ import {
   cleanOutput,
   extractAnswer,
 } from './agent.mjs';
+import { directInvocation, findCommand } from './command.mjs';
 
 const TIMEOUT_MS = 180_000;
 
 export async function isInstalled(command) {
-  for (const dir of (process.env.PATH ?? '').split(delimiter)) {
-    if (!dir) continue;
-    try {
-      await access(join(dir, command), constants.X_OK);
-      return true;
-    } catch {
-      // Not in this directory.
-    }
-  }
-  return false;
+  return (await findCommand(command)) !== null;
 }
 
 function capture(command, args) {
@@ -73,7 +64,11 @@ function execute({ command, args, stdin }, cwd, signal) {
     let stderr = '';
     child.stdout.on('data', (chunk) => (stdout += chunk));
     child.stderr.on('data', (chunk) => (stderr += chunk));
-    child.on('error', reject);
+    child.on('error', (error) => {
+      // The prompt is an argument for most agents, and a command line has a limit.
+      const tooLong = error.code === 'E2BIG' || error.code === 'ENAMETOOLONG';
+      reject(tooLong ? new Error('The text is too long for this agent. Select a smaller part.') : error);
+    });
     child.on('close', (code) => resolve({ code, stdout, stderr }));
     if (stdin !== null) {
       child.stdin.on('error', () => {});
@@ -100,9 +95,13 @@ export async function runRewrite({ agent: configured, model = '', instruction, t
     invocation = { command: 'sh', args: ['-c', testCommand], stdin: prompt };
   } else {
     if (!AGENTS.includes(agent)) agentCommand(agent, model, prompt);
-    if (!(await isInstalled(agent))) throw new Error(`${agent} is not installed.`);
+    const file = await findCommand(agent);
+    if (!file) throw new Error(`${agent} is not installed.`);
     const chosen = model || (agent === 'ollama' ? await newestOllamaModel() : '');
     invocation = agentCommand(agent, chosen, prompt);
+    if (process.platform === 'win32') {
+      invocation = { ...invocation, ...(await directInvocation(file, invocation.args)) };
+    }
   }
 
   // An empty directory keeps a project CLAUDE.md or a repository out of the rewrite.

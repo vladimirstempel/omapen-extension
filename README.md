@@ -17,7 +17,7 @@ result back into the field.
 
 ## Install
 
-Chromium browsers (Chrome, Chromium, Brave, Edge, Vivaldi) on Linux and macOS.
+Chromium browsers (Chrome, Chromium, Brave, Edge, Vivaldi) on Linux, macOS and Windows.
 You need Node.js and one agent: `claude`, `pi`, `omp` or `ollama`.
 
 ```bash
@@ -39,6 +39,16 @@ With no checkout, one command installs the host:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host/install.sh | sh
 ```
+
+On Windows, in PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host/install.ps1 | iex
+```
+
+On Windows the host starts an agent with no `cmd.exe` in between: for an agent
+that npm installed as a `.cmd` script, the host reads the script and runs its
+JavaScript file with Node. Text from a page is thus never read by a shell.
 
 The options page has step by step instructions for the host and for each agent,
 written for people who do not use a terminal every day.

@@ -4,6 +4,8 @@ export interface GuideStep {
   text: string;
   /** A command to paste into the terminal. */
   command?: string;
+  /** The same command for PowerShell, where it is different. */
+  windowsCommand?: string;
   /** A page to open. */
   link?: { label: string; url: string };
 }
@@ -43,7 +45,11 @@ export const AGENT_GUIDES: readonly AgentGuide[] = [
     summary: 'The agent from Anthropic. Very good results, also in languages other than English.',
     cost: 'Needs a paid Claude plan (Pro or Max) or an Anthropic API account.',
     steps: [
-      { text: 'Install Claude Code.', command: 'curl -fsSL https://claude.ai/install.sh | bash' },
+      {
+        text: 'Install Claude Code.',
+        command: 'curl -fsSL https://claude.ai/install.sh | bash',
+        windowsCommand: 'irm https://claude.ai/install.ps1 | iex',
+      },
       {
         text: 'Start it one time and sign in. A browser page opens for that. Then type /exit to close it.',
         command: 'claude',

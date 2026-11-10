@@ -21,6 +21,7 @@ OmaPen browser extension (Chromium MV3): AI writing helper for text fields. Port
 ## Rules
 
 - The agent table in `host/lib/agent.mjs` accepts only agents with a documented "no tools" switch. Do not add an agent without one.
+- On Windows the host must not start an agent through `cmd.exe` or with `shell: true`: the prompt is an argument and comes from a page. `host/lib/command.mjs` finds the program behind a `.cmd` script.
 - The extension id is fixed by `key` in `src/manifest.json`. `host/install.mjs`, `e2e/smoke.mjs` and the options page know this id.
 
 ## Workflow

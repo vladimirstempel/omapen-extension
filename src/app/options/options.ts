@@ -10,14 +10,18 @@ import { HostStatus } from '../../shared/messages';
 import { DEFAULT_PRESETS, parsePresets } from '../../shared/prompts';
 import { AgentChoice, DEFAULT_SETTINGS, ResultMode, Settings } from '../../shared/settings';
 import { Extension } from '../core/extension';
-import { AGENT_GUIDES } from './agent-guides';
+import { AGENT_GUIDES, GuideStep } from './agent-guides';
 import { Command } from './command';
 
 const AGENTS: readonly AgentChoice[] = ['claude', 'pi', 'omp', 'ollama'];
 /** The id that the key in the manifest gives. The host installer knows it. */
 const KNOWN_ID = 'olimmfdblijhjidlaidahlinamdhjblm';
-const INSTALLER =
-  'https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host/install.sh';
+const RAW = 'https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host';
+
+function onWindows(): boolean {
+  const hints = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData;
+  return /win/i.test(hints?.platform ?? navigator.platform);
+}
 
 @Component({
   selector: 'app-options',
@@ -41,12 +45,23 @@ export class Options implements OnInit {
   protected readonly testResult = signal('');
   protected readonly testError = signal('');
 
+  /** The commands and the words for them are different on Windows. */
+  protected readonly windows = onWindows();
+  protected readonly terminal = this.windows ? 'PowerShell' : 'the Terminal application';
+
   /** One command that downloads the host and installs it. */
   protected readonly installCommand = computed(() => {
     const id = chrome.runtime.id;
-    const extra = id === KNOWN_ID ? '' : ` -s -- --extension-id ${id}`;
-    return `curl -fsSL ${INSTALLER} | sh${extra}`;
+    const known = id === KNOWN_ID;
+    if (this.windows) {
+      return `${known ? '' : `$env:OMAPEN_EXTENSION_ID='${id}'; `}irm ${RAW}/install.ps1 | iex`;
+    }
+    return `curl -fsSL ${RAW}/install.sh | sh${known ? '' : ` -s -- --extension-id ${id}`}`;
   });
+
+  protected commandFor(step: GuideStep): string | undefined {
+    return (this.windows && step.windowsCommand) || step.command;
+  }
 
   protected readonly hostReady = computed(() => this.host()?.ok === true);
   protected readonly anyAgent = computed(() => (this.host()?.agents?.length ?? 0) > 0);

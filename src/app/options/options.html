@@ -17,7 +17,7 @@
       } @else {
         <p>
           A browser extension is not permitted to start programs on your computer. OmaPen uses a
-          small helper program for that. You install it one time. It works on Linux and macOS.
+          small helper program for that. You install it one time. It works on Linux, macOS and Windows.
         </p>
         <ol>
           <li>
@@ -26,12 +26,17 @@
             (the button "Download" on that page).
           </li>
           <li>
-            Open the Terminal application. On macOS: press <kbd>Cmd</kbd>+<kbd>Space</kbd>, type
-            Terminal, press <kbd>Return</kbd>. On Linux: look for Terminal or Console in your
-            applications.
+            @if (windows) {
+              Open PowerShell: press the <kbd>Windows</kbd> key, type PowerShell, press
+              <kbd>Enter</kbd>.
+            } @else {
+              Open the Terminal application. On macOS: press <kbd>Cmd</kbd>+<kbd>Space</kbd>, type
+              Terminal, press <kbd>Return</kbd>. On Linux: look for Terminal or Console in your
+              applications.
+            }
           </li>
           <li>
-            Copy this command, paste it into the terminal, press <kbd>Return</kbd>:
+            Copy this command, paste it into that window, press <kbd>Enter</kbd>:
             <app-command [text]="installCommand()" />
           </li>
           <li>Come back to this page and click "Check again".</li>
@@ -76,7 +81,7 @@
               @if (step.link; as link) {
                 <a [href]="link.url" target="_blank" rel="noopener">{{ link.label }}</a>
               }
-              @if (step.command; as command) {
+              @if (commandFor(step); as command) {
                 <app-command [text]="command" />
               }
             </li>
@@ -85,8 +90,9 @@
       </details>
     }
     <p class="hint">
-      You paste the commands into the Terminal application, the same as in step 1. If an agent you
-      installed shows as "Not installed", do step 1 again: the helper program then finds it.
+      You paste the commands into {{ terminal }}, the same as in step 1. If an agent you installed
+      shows as "Not installed", close the browser fully and open it again. If that does not help, do
+      step 1 again.
     </p>
   </section>
 

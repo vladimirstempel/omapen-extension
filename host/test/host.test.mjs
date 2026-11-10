@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { chmod, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -11,6 +13,7 @@ import {
   cleanOutput,
   extractAnswer,
 } from '../lib/agent.mjs';
+import { directInvocation, findCommand, shimTarget } from '../lib/command.mjs';
 import { createDecoder, encodeMessage } from '../lib/protocol.mjs';
 
 const HOST = join(dirname(fileURLToPath(import.meta.url)), '..', 'omapen-host.mjs');
@@ -82,6 +85,60 @@ test('the protocol decoder handles split and joined chunks', () => {
   decode(bytes.subarray(0, 3));
   decode(bytes.subarray(3));
   assert.deepEqual(seen, [{ a: 1 }, { b: 'ü' }]);
+});
+
+const NPM_SHIM = [
+  '@ECHO off',
+  'IF EXIST "%dp0%\\node.exe" (',
+  '  SET "_prog=%dp0%\\node.exe"',
+  ') ELSE (',
+  '  SET "_prog=node"',
+  ')',
+  'endLocal & goto #_undefined_# 2>NUL || title %COMSPEC% & "%_prog%"  "%dp0%\\node_modules\\@scope\\agent\\dist\\cli.js" %*',
+].join('\r\n');
+
+test('a Windows npm script gives the program that it starts', () => {
+  assert.equal(shimTarget(NPM_SHIM), 'node_modules\\@scope\\agent\\dist\\cli.js');
+  assert.equal(shimTarget('@"%~dp0\\node_modules\\x\\bin\\x.exe" %*'), 'node_modules\\x\\bin\\x.exe');
+  assert.equal(shimTarget('@echo off\r\npowershell -File run.ps1 %*'), null);
+});
+
+test('on Windows an agent is found by its extension and started with no shell', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'omapen-test-'));
+  try {
+    await writeFile(join(dir, 'pi.cmd'), NPM_SHIM);
+    await writeFile(join(dir, 'other.cmd'), '@echo off\r\necho %*');
+    const env = { PATH: `C:\\nothing;${dir}` };
+    const file = await findCommand('pi', { platform: 'win32', env });
+    assert.equal(file, join(dir, 'pi.cmd'));
+    assert.equal(await findCommand('claude', { platform: 'win32', env }), null);
+
+    // The text of a page with shell characters stays one argument of node.
+    const { command, args } = await directInvocation(file, ['-p', 'a & calc.exe']);
+    assert.equal(command, process.execPath);
+    assert.deepEqual(args, [join(dir, 'node_modules', '@scope', 'agent', 'dist', 'cli.js'), '-p', 'a & calc.exe']);
+    assert.deepEqual(await directInvocation('C:\\bin\\ollama.exe', ['list']), {
+      command: 'C:\\bin\\ollama.exe',
+      args: ['list'],
+    });
+    await assert.rejects(directInvocation(join(dir, 'other.cmd'), []), /cmd\.exe/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('off Windows a command must be executable', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'omapen-test-'));
+  try {
+    await writeFile(join(dir, 'plain'), '');
+    await writeFile(join(dir, 'tool'), '#!/bin/sh\n');
+    await chmod(join(dir, 'tool'), 0o755);
+    const options = { platform: 'linux', env: { PATH: dir } };
+    assert.equal(await findCommand('tool', options), join(dir, 'tool'));
+    assert.equal(await findCommand('plain', options), null);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
 
 function callHost(message, env = {}) {
