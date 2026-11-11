@@ -20,6 +20,8 @@ Make the ZIP with `pnpm package`.
 ```
 OmaPen rewrites the text in any field with the AI agent on your own computer.
 
+☕ OmaPen is free. If it helps you, you can buy me a coffee: https://buymeacoffee.com/stempelv
+
 Write a reply, a comment or a mail. Click the pen in the field, or press Alt+Shift+H. A small panel opens next to your text. Pick an action:
 
 • Fix grammar
