@@ -1,6 +1,6 @@
 {
   "name": "omapen-extension",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "scripts": {
     "build": "ng build",
     "watch": "ng build --watch --configuration development",

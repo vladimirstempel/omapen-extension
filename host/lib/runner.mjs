@@ -80,22 +80,16 @@ function execute({ command, args, stdin }, cwd, signal) {
       cwd,
       signal,
       timeout: TIMEOUT_MS,
-      stdio: [stdin === null ? 'ignore' : 'pipe', 'pipe', 'pipe'],
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (chunk) => (stdout += chunk));
     child.stderr.on('data', (chunk) => (stderr += chunk));
-    child.on('error', (error) => {
-      // The prompt is an argument for most agents, and a command line has a limit.
-      const tooLong = error.code === 'E2BIG' || error.code === 'ENAMETOOLONG';
-      reject(tooLong ? new Error('The text is too long for this agent. Select a smaller part.') : error);
-    });
+    child.on('error', reject);
     child.on('close', (code) => resolve({ code, stdout, stderr }));
-    if (stdin !== null) {
-      child.stdin.on('error', () => {});
-      child.stdin.end(stdin);
-    }
+    child.stdin.on('error', () => {});
+    child.stdin.end(stdin);
   });
 }
 

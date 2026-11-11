@@ -16,13 +16,13 @@ export const DEFAULT_PRESETS: readonly Preset[] = [
     id: 'rewrite',
     label: 'Rewrite',
     instruction:
-      'Rewrite this so it reads better. Keep the meaning, the voice and roughly the length.',
+      'Rewrite this so it reads better: say the same thing with different wording and a different sentence structure. Never return the text as it is, however good it already is. Keep the meaning, the voice and roughly the length.',
   },
   {
     id: 'shorten',
     label: 'Shorten',
     instruction:
-      'Cut this down. Keep every point that carries information, drop the rest. Do not add anything.',
+      'Cut this down so it has clearly fewer words than the original, also when it is already short. Keep every point that carries information, drop the rest, and start with a full sentence. Do not add anything.',
   },
   {
     id: 'elaborate',
@@ -34,12 +34,13 @@ export const DEFAULT_PRESETS: readonly Preset[] = [
     id: 'formal',
     label: 'More formal',
     instruction:
-      'Rewrite this in a professional register. No slang, no contractions, no stiffness either.',
+      'Rewrite this in a professional register, with the wording a formal letter uses, so it reads differently from the original. No slang, no contractions, no stiffness either.',
   },
   {
     id: 'casual',
     label: 'More casual',
-    instruction: 'Rewrite this the way you would say it to a colleague. Plain, warm, not sloppy.',
+    instruction:
+      'Rewrite this the way you would say it to a colleague, with the wording of everyday talk, so it reads differently from the original. Plain, warm, not sloppy.',
   },
   {
     id: 'bullets',
@@ -54,6 +55,30 @@ export const DEFAULT_PRESETS: readonly Preset[] = [
       'Translate this into English. Match the register of the original. Output the translation only.',
   },
 ];
+
+/**
+ * The instructions that 0.1.0 had for the default actions. A stored action that
+ * still has one of them was not changed by the person, so it gets the new text.
+ */
+const SUPERSEDED: Readonly<Record<string, string>> = {
+  rewrite:
+    'Rewrite this so it reads better. Keep the meaning, the voice and roughly the length.',
+  shorten:
+    'Cut this down. Keep every point that carries information, drop the rest. Do not add anything.',
+  formal:
+    'Rewrite this in a professional register. No slang, no contractions, no stiffness either.',
+  casual:
+    'Rewrite this the way you would say it to a colleague. Plain, warm, not sloppy.',
+};
+
+export function upgradePresets(presets: Preset[]): Preset[] {
+  return presets.map((preset) => {
+    const current = DEFAULT_PRESETS.find(({ id }) => id === preset.id);
+    return current && SUPERSEDED[preset.id] === preset.instruction
+      ? { ...preset, instruction: current.instruction }
+      : preset;
+  });
+}
 
 /** Returns the presets in `value`, or an error message when it is not a valid list. */
 export function parsePresets(value: unknown): Preset[] | string {

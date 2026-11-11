@@ -8,7 +8,7 @@
 import { createDecoder, encodeMessage } from './lib/protocol.mjs';
 import { installedAgents, listModels, resolveAgent, runRewrite } from './lib/runner.mjs';
 
-export const HOST_VERSION = '0.2.0';
+export const HOST_VERSION = '0.2.1';
 
 const abort = new AbortController();
 let pending = 0;

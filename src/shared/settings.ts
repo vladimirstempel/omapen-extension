@@ -1,4 +1,4 @@
-import { DEFAULT_PRESETS, Preset } from './prompts';
+import { DEFAULT_PRESETS, Preset, upgradePresets } from './prompts';
 
 export type AgentChoice = 'auto' | 'claude' | 'pi' | 'omp' | 'ollama';
 export type ResultMode = 'panel' | 'replace';
@@ -31,7 +31,7 @@ export async function loadSettings(): Promise<Settings> {
   )) as unknown as Settings;
   // The storage sorts the keys of an object. Put them back in the order people write them.
   const presets = stored.presets.map(({ id, label, instruction }) => ({ id, label, instruction }));
-  return { ...stored, presets };
+  return { ...stored, presets: upgradePresets(presets) };
 }
 
 export async function saveSettings(patch: Partial<Settings>): Promise<void> {

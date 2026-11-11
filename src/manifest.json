@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "OmaPen",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Help me write, with your own local AI agent: rewrite the text in any field with claude, pi, omp or ollama.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmuc9BAURiomCmPAbgDjIC9jJOR2rspv5NaPHEVmA9w+2uDs/kEcJKRm63axloCIAJp54C6xDyWGOmogahiMBVGXq5EN8jkTgTp4bmnESakE+1Om2QJDx7xzgrGYrUvxtYnss6YrnFaqEftYjw9ZWU8WAYs2QnLXUdmFdUd/tarN7vrwrJG1+hyZ/nze9UPlrUNygAqJafrevbv+oYqerjEMnKAEo+4MHgGzHZV4crife6GnzTUads7Vklzlh46XGTjudbJwyaSGCTNqOW2ggdyXsEnIp0quoHqbayLyzmnubZe92w4TQxmvJSZQbGILzVJtnwLkk++RAS6YhaLtGZQIDAQAB",
   "icons": {

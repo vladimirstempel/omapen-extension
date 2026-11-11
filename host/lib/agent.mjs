@@ -6,7 +6,12 @@ export const AGENTS = ['claude', 'pi', 'omp', 'ollama'];
 export const SYSTEM_PROMPT =
   'You are a writing assistant. Rewrite the text the user gives you ' +
   'following their instruction. Reply with the rewritten text only: no preamble, no ' +
-  'explanation, no surrounding quotes, no markdown fences. Keep the original ' +
+  'explanation, no surrounding quotes, no markdown fences. The instruction is your main ' +
+  'job and you always carry it out in full: a rewrite reads differently from the ' +
+  'original, a shorter version has fewer words, a change of register changes the ' +
+  'wording. On top of that, and never in place of it, correct every spelling, ' +
+  'grammar and typing mistake, so no mistake from the original is copied into your ' +
+  'answer. Keep the original ' +
   'language unless the instruction says otherwise. Keep the original formatting, ' +
   'line breaks and placeholders intact. Punctuate the way a person typing does: ' +
   'no em dashes, no semicolons, no curly quotes, no rhetorical "not X but Y", ' +
@@ -33,8 +38,9 @@ export function defaultModel(agent) {
  * The text comes from web pages, so it is untrusted. Only agents with a
  * documented "no tools at all" switch are accepted. ollama has no tools.
  *
- * Returns { command, args, stdin }. `stdin` is the prompt when the agent
- * reads it from stdin, otherwise the prompt is the last argument.
+ * Returns { command, args, stdin }. The prompt holds the text of the person,
+ * and each user on the machine can read a command line. Thus the prompt is
+ * never an argument: each agent here reads it from stdin.
  */
 export function agentCommand(agent, model, prompt) {
   if (!isValidModel(model)) {
@@ -55,21 +61,20 @@ export function agentCommand(agent, model, prompt) {
         SYSTEM_PROMPT,
       ];
       if (chosen) args.push('--model', chosen);
-      // The prompt starts with the user's instruction. On stdin it cannot be
-      // read as a flag.
       return { command: 'claude', args, stdin: prompt };
     }
     case 'pi': {
       const args = ['--no-tools'];
       if (chosen) args.push('--model', chosen);
-      args.push('-p', prompt);
-      return { command: 'pi', args, stdin: null };
+      // -p is a boolean. With no positional prompt, pi reads stdin.
+      args.push('-p');
+      return { command: 'pi', args, stdin: prompt };
     }
     case 'omp': {
       const args = ['--no-tools'];
       if (chosen) args.push(`--model=${chosen}`);
-      args.push('-p', prompt);
-      return { command: 'omp', args, stdin: null };
+      args.push('-p');
+      return { command: 'omp', args, stdin: prompt };
     }
     case 'ollama': {
       if (!chosen) {
@@ -79,8 +84,8 @@ export function agentCommand(agent, model, prompt) {
       }
       return {
         command: 'ollama',
-        args: ['run', chosen, '--hidethinking', '--nowordwrap', prompt],
-        stdin: null,
+        args: ['run', chosen, '--hidethinking', '--nowordwrap'],
+        stdin: prompt,
       };
     }
     default:

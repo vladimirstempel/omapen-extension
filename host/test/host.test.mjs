@@ -32,9 +32,17 @@ test('claude runs with every tool off and the prompt on stdin', () => {
 });
 
 test('pi and omp run with --no-tools', () => {
-  assert.deepEqual(agentCommand('pi', 'm1', 'P').args, ['--no-tools', '--model', 'm1', '-p', 'P']);
-  assert.deepEqual(agentCommand('omp', 'm1', 'P').args, ['--no-tools', '--model=m1', '-p', 'P']);
-  assert.deepEqual(agentCommand('pi', '', 'P').args, ['--no-tools', '-p', 'P']);
+  assert.deepEqual(agentCommand('pi', 'm1', 'P').args, ['--no-tools', '--model', 'm1', '-p']);
+  assert.deepEqual(agentCommand('omp', 'm1', 'P').args, ['--no-tools', '--model=m1', '-p']);
+  assert.deepEqual(agentCommand('pi', '', 'P').args, ['--no-tools', '-p']);
+});
+
+test('the prompt is never on a command line', () => {
+  for (const agent of ['claude', 'pi', 'omp', 'ollama']) {
+    const { args, stdin } = agentCommand(agent, 'm1', 'PROMPT');
+    assert.equal(stdin, 'PROMPT');
+    assert.ok(!args.includes('PROMPT'));
+  }
 });
 
 test('ollama needs a model', () => {
@@ -44,7 +52,6 @@ test('ollama needs a model', () => {
     'gemma3:4b',
     '--hidethinking',
     '--nowordwrap',
-    'P',
   ]);
 });
 
