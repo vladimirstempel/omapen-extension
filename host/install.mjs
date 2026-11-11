@@ -19,7 +19,10 @@ export const HOST_NAME = 'com.stempelv.omapen';
 // The extensions that may start the host. The first id is the one that the
 // `key` in src/manifest.json gives an unpacked build. The id of the Chrome Web
 // Store item goes here too.
-export const EXTENSION_IDS = ['olimmfdblijhjidlaidahlinamdhjblm'];
+export const EXTENSION_IDS = [
+  'olimmfdblijhjidlaidahlinamdhjblm', // unpacked build
+  'omdbmocaoacjcabkcfebgbnlnpofpmci', // Chrome Web Store
+];
 
 const home = homedir();
 const source = dirname(fileURLToPath(import.meta.url));

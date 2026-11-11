@@ -60,7 +60,7 @@ Free and open source (MIT): https://github.com/vladimirstempel/omapen-extension
 
 | Field | File |
 |---|---|
-| Store icon | in the ZIP (`icons/icon-128.png`) |
+| Store icon | `store-icon.png` (128x128) |
 | Screenshots | `screenshot-1.png` to `screenshot-5.png` (1280x800) |
 | Small promo tile | `promo-small.png` (440x280) |
 | Marquee promo tile | `promo-marquee.png` (1400x560) |
@@ -123,7 +123,7 @@ Source code: https://github.com/vladimirstempel/omapen-extension
 
 ## After the first upload
 
-1. The dashboard shows the item id. Add it to `EXTENSION_IDS` in `host/install.mjs` and to `KNOWN_IDS` in `src/app/options/options.ts`. Without this the helper program refuses the store build.
+1. Done: the item id is `omdbmocaoacjcabkcfebgbnlnpofpmci`. It is in `EXTENSION_IDS` in `host/install.mjs` and in `KNOWN_IDS` in `src/app/options/options.ts`. Without this the helper program refuses the store build.
 2. Optional: Package tab, "View public key". Put it in `key` of `src/manifest.json`, then an unpacked build has the same id as the store item.
 
 ## Account

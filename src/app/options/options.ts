@@ -15,7 +15,7 @@ import { Command } from './command';
 
 const AGENTS: readonly AgentChoice[] = ['claude', 'pi', 'omp', 'ollama'];
 /** The ids that the host installer knows: see EXTENSION_IDS in host/install.mjs. */
-const KNOWN_IDS = ['olimmfdblijhjidlaidahlinamdhjblm'];
+const KNOWN_IDS = ['olimmfdblijhjidlaidahlinamdhjblm', 'omdbmocaoacjcabkcfebgbnlnpofpmci'];
 /** The list entry that opens the field. No agent has a model with this id. */
 const OTHER_MODEL = '\u0000other';
 

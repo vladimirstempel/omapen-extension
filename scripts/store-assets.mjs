@@ -160,6 +160,12 @@ const marquee = (image) =>
   <img class="shot" style="height:440px" src="${image}">
 </div>`);
 
+// The store shows the icon on white and on grey. The dark tile keeps the green
+// lines readable there. 96 px of drawing with 16 px of clear space, as the
+// store asks.
+const storeIcon = `<!doctype html><body style="margin:0;display:grid;place-items:center;width:128px;height:128px">
+  <div style="width:96px;height:96px;padding:17px;border-radius:20px;background:#1a1b26">${ICON}</div>`;
+
 const dataUrl = (png) => `data:image/png;base64,${Buffer.from(png).toString('base64')}`;
 
 mkdirSync(OUT, { recursive: true });
@@ -246,6 +252,11 @@ try {
   await frame.waitForSelector('.result-text');
   await sleep(500);
   await save(page, 'screenshot-5');
+
+  const iconPage = await newPage({ width: 128, height: 128, deviceScaleFactor: 1 });
+  await iconPage.setContent(storeIcon);
+  await iconPage.screenshot({ path: join(OUT, 'store-icon.png'), omitBackground: true });
+  console.log('store-icon.png');
 
   await still(smallTile, { width: 440, height: 280, deviceScaleFactor: 1 }, 'promo-small');
   await still(marquee(dataUrl(panelImage)), { width: 1400, height: 560, deviceScaleFactor: 1 }, 'promo-marquee');
