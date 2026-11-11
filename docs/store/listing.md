@@ -107,20 +107,14 @@ Leave the other categories empty. Tick all three certifications (no sale of data
 
 ## Test instructions tab
 
+The field takes 500 characters at most. This text has 465.
+
 ```
-OmaPen needs a helper program and an AI agent on the same computer. No account and no credentials are necessary.
+No account is necessary. The rewrite needs a helper program and a local AI agent (Node.js necessary).
 
-Without the helper program:
-1. Open the options page of the extension. Step 1 shows the install instructions.
-2. Open any page with a multi-line text field and click in the field. The pen icon shows in the field. Click it: the panel opens next to the field. An action then shows a message that the helper program is not installed.
+Without them: click in a multi-line text field on any page. The pen icon shows. Click it: the panel opens. An action shows "helper program not installed".
 
-With the helper program (Linux, macOS or Windows, Node.js necessary):
-1. Run the command that step 1 of the options page shows. Restart the browser.
-2. Install Ollama from https://ollama.com/download and run: ollama pull gemma3
-3. On the options page click "Check again", then "Test the agent". The corrected sentence shows.
-4. On any page: type a sentence in a multi-line text field, click the pen icon, click "Fix grammar", then "Replace".
-
-Source code: https://github.com/vladimirstempel/omapen-extension
+Full test: open the options page, run the command from step 1, restart the browser. Install Ollama, run: ollama pull gemma3. Click "Test the agent". Then in a text field: pen icon, "Fix grammar", "Replace".
 ```
 
 ## After the first upload
