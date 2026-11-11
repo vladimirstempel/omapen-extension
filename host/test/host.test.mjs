@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { chmod, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -178,6 +179,15 @@ function callHost(message, env = {}) {
   });
 }
 
+// An environment where `claude` is a shell script with this body. The host has
+// no switch that replaces the agent, so the tests put a fake one on the PATH.
+function fakeAgent(body) {
+  const dir = mkdtempSync(join(tmpdir(), 'omapen-fake-'));
+  process.on('exit', () => rmSync(dir, { recursive: true, force: true }));
+  writeFileSync(join(dir, 'claude'), `#!/bin/sh\n${body}\n`, { mode: 0o755 });
+  return { PATH: `${dir}:${process.env.PATH}` };
+}
+
 test('the host answers a ping', async () => {
   const answer = await callHost({ type: 'ping' });
   assert.equal(answer.ok, true);
@@ -187,7 +197,7 @@ test('the host answers a ping', async () => {
 test('the host runs the whole chain against a fake agent', async () => {
   const answer = await callHost(
     { type: 'run', agent: 'claude', model: '', instruction: 'Shorten', text: 'some text' },
-    { OMAPEN_AGENT_CMD: "cat >/dev/null; printf 'note\\n<rewrite>\\nshort\\n</rewrite>\\n'" },
+    fakeAgent("cat >/dev/null; printf 'note\\n<rewrite>\\nshort\\n</rewrite>\\n'"),
   );
   assert.deepEqual(answer, { ok: true, agent: 'claude', result: 'short' });
 });
@@ -195,7 +205,7 @@ test('the host runs the whole chain against a fake agent', async () => {
 test('a failing agent comes back as an error, never as text', async () => {
   const answer = await callHost(
     { type: 'run', agent: 'claude', model: '', instruction: 'Shorten', text: 'some text' },
-    { OMAPEN_AGENT_CMD: 'cat >/dev/null; echo "Not logged in" >&2; echo junk; exit 3' },
+    fakeAgent('cat >/dev/null; echo "Not logged in" >&2; echo junk; exit 3'),
   );
   assert.deepEqual(answer, { ok: false, error: 'Not logged in' });
 });

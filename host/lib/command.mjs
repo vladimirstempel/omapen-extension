@@ -2,8 +2,8 @@
 //
 // On Windows many agents are installed as a `.cmd` script that starts Node.
 // Only cmd.exe can run such a script, and cmd.exe reads `&`, `|`, `%` and `^`
-// in the arguments as commands. The prompt is an argument and comes from a web
-// page, so the host never goes through cmd.exe: it reads the script, finds the
+// in the arguments as commands. The host never goes through cmd.exe: it reads
+// the script, finds the
 // program that the script starts, and starts that program itself.
 
 import { access, constants, readFile } from 'node:fs/promises';

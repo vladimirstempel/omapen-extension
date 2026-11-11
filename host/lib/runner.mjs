@@ -102,22 +102,15 @@ export async function runRewrite({ agent: configured, model = '', instruction, t
   if (!text?.trim()) throw new Error('There is no text to rewrite.');
 
   const agent = await resolveAgent(configured);
-  const testCommand = process.env.OMAPEN_AGENT_CMD;
   const prompt = buildPrompt(instruction, text, agent);
 
-  let invocation;
-  if (testCommand) {
-    // Test seam: replaces the agent only. The output handling below still runs.
-    invocation = { command: 'sh', args: ['-c', testCommand], stdin: prompt };
-  } else {
-    if (!AGENTS.includes(agent)) agentCommand(agent, model, prompt);
-    const file = await findCommand(agent);
-    if (!file) throw new Error(`${agent} is not installed.`);
-    const chosen = model || (agent === 'ollama' ? await newestOllamaModel() : '');
-    invocation = agentCommand(agent, chosen, prompt);
-    if (process.platform === 'win32') {
-      invocation = { ...invocation, ...(await directInvocation(file, invocation.args)) };
-    }
+  if (!AGENTS.includes(agent)) agentCommand(agent, model, prompt);
+  const file = await findCommand(agent);
+  if (!file) throw new Error(`${agent} is not installed.`);
+  const chosen = model || (agent === 'ollama' ? await newestOllamaModel() : '');
+  let invocation = { ...agentCommand(agent, chosen, prompt), command: file };
+  if (process.platform === 'win32') {
+    invocation = { ...invocation, ...(await directInvocation(file, invocation.args)) };
   }
 
   // An empty directory keeps a project CLAUDE.md or a repository out of the rewrite.

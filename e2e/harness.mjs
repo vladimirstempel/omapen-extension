@@ -36,9 +36,20 @@ export async function startExtension({ page, agentCommand }) {
   // A profile with the host registered straight from this checkout.
   const profile = mkdtempSync(join(tmpdir(), 'omapen-e2e-'));
   const launcher = join(profile, 'omapen-host');
+  // The host has no switch that replaces the agent. The fake agent is a
+  // `claude` at the front of the PATH of the host, and it is the default agent.
+  const bin = join(profile, 'bin');
+  mkdirSync(bin);
+  for (const [name, body] of [
+    ['claude', agentCommand],
+    ['omarchy-default-agent', 'echo claude'],
+  ]) {
+    writeFileSync(join(bin, name), `#!/bin/sh\n${body}\n`);
+    chmodSync(join(bin, name), 0o755);
+  }
   writeFileSync(
     launcher,
-    `#!/bin/sh\nexec '${process.execPath}' '${join(ROOT, 'host', 'omapen-host.mjs')}'\n`,
+    `#!/bin/sh\nPATH='${bin}':"$PATH"\nexec '${process.execPath}' '${join(ROOT, 'host', 'omapen-host.mjs')}'\n`,
   );
   chmodSync(launcher, 0o755);
   mkdirSync(join(profile, 'NativeMessagingHosts'));
@@ -58,7 +69,6 @@ export async function startExtension({ page, agentCommand }) {
     headless: true,
     userDataDir: profile,
     args: [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`, '--no-first-run'],
-    env: { ...process.env, OMAPEN_AGENT_CMD: agentCommand },
   });
   return {
     browser,
