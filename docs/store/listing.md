@@ -107,12 +107,12 @@ Leave the other categories empty. Tick all three certifications (no sale of data
 
 ## Test instructions tab
 
-The field takes 500 characters at most. This text has 465.
+The field takes 500 characters at most. This text has 470.
 
 ```
 No account is necessary. The rewrite needs a helper program and a local AI agent (Node.js necessary).
 
-Without them: click in a multi-line text field on any page. The pen icon shows. Click it: the panel opens. An action shows "helper program not installed".
+Without them: click in a multi-line text field on any page. The pen icon shows. Click it: the panel opens. An action shows an error with the link "Open setup".
 
 Full test: open the options page, run the command from step 1, restart the browser. Install Ollama, run: ollama pull gemma3. Click "Test the agent". Then in a text field: pen icon, "Fix grammar", "Replace".
 ```
