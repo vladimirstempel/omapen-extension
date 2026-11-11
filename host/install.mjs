@@ -16,12 +16,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const HOST_NAME = 'com.stempelv.omapen';
-// The extensions that may start the host. The first id is the one that the
-// `key` in src/manifest.json gives an unpacked build. The id of the Chrome Web
-// Store item goes here too.
+// The extensions that may start the host. The `key` in src/manifest.json is the
+// public key of the Chrome Web Store item, so an unpacked build and the store
+// build have the same id.
 export const EXTENSION_IDS = [
-  'olimmfdblijhjidlaidahlinamdhjblm', // unpacked build
-  'omdbmocaoacjcabkcfebgbnlnpofpmci', // Chrome Web Store
+  'omdbmocaoacjcabkcfebgbnlnpofpmci', // Chrome Web Store and unpacked build
+  'olimmfdblijhjidlaidahlinamdhjblm', // unpacked build before 0.1.0 was in the store
 ];
 
 const home = homedir();

@@ -3,7 +3,7 @@
   "name": "OmaPen",
   "version": "0.1.0",
   "description": "Help me write, with your own local AI agent: rewrite the text in any field with claude, pi, omp or ollama.",
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6nJSZcics9h0mDUJJ1AqBbRufw958Ps+BxzLOKHgaaStrJV756baghNVAcXN2JiynX8ji7th5Fp9riulfQxfo3m3vT/Wa0zHdvd4uJ57e5DP3v4A7+Eo4Dz1ioKfJVJonBgj3auZ1gi7yGlqtBcoB/IqMc+kbb9pukw77wvpFNvmJGsz/PPNjyglDaYoPIEtAb88U/LMO88/Kmyjb6fESO1iIf0D70eTXB8fCOFssl6lx72kW3kFonoOQeZikCFbLUlu+wdi9k6XItptJM5dz4O/hZd3kBUnW2a/xzunfHKY66BaGLY+Ud7zwZQHYstQFPbC2UoxypStNagqox/L9QIDAQAB",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmuc9BAURiomCmPAbgDjIC9jJOR2rspv5NaPHEVmA9w+2uDs/kEcJKRm63axloCIAJp54C6xDyWGOmogahiMBVGXq5EN8jkTgTp4bmnESakE+1Om2QJDx7xzgrGYrUvxtYnss6YrnFaqEftYjw9ZWU8WAYs2QnLXUdmFdUd/tarN7vrwrJG1+hyZ/nze9UPlrUNygAqJafrevbv+oYqerjEMnKAEo+4MHgGzHZV4crife6GnzTUads7Vklzlh46XGTjudbJwyaSGCTNqOW2ggdyXsEnIp0quoHqbayLyzmnubZe92w4TQxmvJSZQbGILzVJtnwLkk++RAS6YhaLtGZQIDAQAB",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",

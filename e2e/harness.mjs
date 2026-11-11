@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const EXTENSION = join(ROOT, 'dist', 'omapen');
 /** The id that the `key` in src/manifest.json gives. */
-export const ID = 'olimmfdblijhjidlaidahlinamdhjblm';
+export const ID = 'omdbmocaoacjcabkcfebgbnlnpofpmci';
 const HOST_NAME = 'com.stempelv.omapen';
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
