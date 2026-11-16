@@ -1,5 +1,6 @@
 # OmaPen for the browser
 
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/omdbmocaoacjcabkcfebgbnlnpofpmci?label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/omapen/omdbmocaoacjcabkcfebgbnlnpofpmci)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/stempelv)
 
 "Help me write" with the AI agent on your own machine. The browser version of
@@ -20,6 +21,24 @@ result back into the field.
 Chromium browsers (Chrome, Chromium, Brave, Edge, Vivaldi) on Linux, macOS and Windows.
 You need Node.js and one agent: `claude`, `pi`, `omp` or `ollama`.
 
+1. Add the extension from the
+   [Chrome Web Store](https://chromewebstore.google.com/detail/omapen/omdbmocaoacjcabkcfebgbnlnpofpmci).
+2. Install the host, the program that runs your agent. On Linux and macOS:
+
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host/install.sh | sh
+   ```
+
+   On Windows, in PowerShell:
+
+   ```powershell
+   irm https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host/install.ps1 | iex
+   ```
+
+The options page says if the host was found and has a button to test the agent.
+
+### From source
+
 ```bash
 git clone https://github.com/vladimirstempel/omapen-extension.git
 cd omapen-extension
@@ -29,22 +48,10 @@ pnpm host:install       # the host program that runs your agent
 ```
 
 Then open `chrome://extensions`, turn on **Developer mode**, click **Load
-unpacked** and pick `dist/omapen`. The options page says if the host was found
-and has a button to test the agent.
+unpacked** and pick `dist/omapen`. This build and the store build have the same
+id: remove one before you add the other.
 
 `pnpm host:uninstall` removes the host.
-
-With no checkout, one command installs the host:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host/install.sh | sh
-```
-
-On Windows, in PowerShell:
-
-```powershell
-irm https://raw.githubusercontent.com/vladimirstempel/omapen-extension/main/host/install.ps1 | iex
-```
 
 On Windows the host starts an agent with no `cmd.exe` in between: for an agent
 that npm installed as a `.cmd` script, the host reads the script and runs its
