@@ -48,8 +48,8 @@ pnpm host:install       # the host program that runs your agent
 ```
 
 Then open `chrome://extensions`, turn on **Developer mode**, click **Load
-unpacked** and pick `dist/omapen`. This build and the store build have the same
-id: remove one before you add the other.
+unpacked** and pick `dist/omapen`. This build has the same id as the store build, so
+the browser holds only one of the two.
 
 `pnpm host:uninstall` removes the host.
 
